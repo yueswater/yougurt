@@ -1,0 +1,20 @@
+[project]
+name = "yougurt"
+version = "0.1.0"
+description = "A lightweight inventory and member management system"
+authors = [
+    { name = "Anthony Sung", email = "sungpinyue@gmail.com" }
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+]
+
+[tool.poetry]
+packages = [
+    { include = "src" }
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
