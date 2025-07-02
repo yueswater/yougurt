@@ -1,11 +1,25 @@
-from src.utils.sheet_client import get_worksheet
+from datetime import datetime
+from uuid import uuid4
+
+from src.models.member import Member
+from src.repos.member_repo import GoogleSheetMemberRepository
 
 
 def main():
-    worksheet = get_worksheet("Products")
-    records = worksheet.get_all_records()
-    for row in records:
-        print(row)
+    repo = GoogleSheetMemberRepository()
+
+    test_member = Member(
+        member_id=uuid4(),
+        line_id="sungbonayue",
+        member_name="宋品岳",
+        create_at=datetime.now(),
+        order_type="monthly",
+        remain_delivery=6,
+        prepaid=3000,
+    )
+
+    repo.add(test_member)
+    print("測試會員已寫入 Google Sheet！")
 
 
 if __name__ == "__main__":
