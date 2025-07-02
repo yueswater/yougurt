@@ -17,14 +17,8 @@ class Member:
     remain_delivery: int
     prepaid: int
 
-    def __post_init__(self):
-        if self.remain_delivery < 0:
-            raise ValueError("remain_delivery cannot be negative")
-        if self.prepaid < 0:
-            raise ValueError("prepaid cannot be negative")
-
     @classmethod
-    def from_dict(cls, data: Dict):
+    def from_dict(cls, data: Dict) -> "Member":
         return cls(
             member_id=format_uuid(data["member_id"]),
             line_id=data["line_id"],
@@ -45,3 +39,9 @@ class Member:
             "remain_delivery": self.remain_delivery,
             "prepaid": self.prepaid,
         }
+
+    def __post_init__(self):
+        if self.remain_delivery < 0:
+            raise ValueError("remain_delivery cannot be negative")
+        if self.prepaid < 0:
+            raise ValueError("prepaid cannot be negative")
