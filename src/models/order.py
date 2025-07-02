@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Any, Dict
 from uuid import UUID
 
+from src.models.product import Product
 from src.utils.format_datetime import format_datetime
 from src.utils.format_uuid import format_uuid
 
@@ -22,12 +23,8 @@ class Order:
     invoice: str
     tax: int
 
-    def __post_init__(self):
-        if self.order_fee < 0 or self.total_fee < 0 or self.tax < 0:
-            raise ValueError("order_fee, total_fee, and tax cannot be negative")
-
     @classmethod
-    def from_dict(cls, data: Dict):
+    def from_dict(cls, data: Dict) -> "Order":
         return cls(
             order_id=format_uuid(data["order_id"]),
             order_date=format_datetime(data["order_date"]),
@@ -58,3 +55,32 @@ class Order:
             "invoice": self.invoice,
             "tax": self.tax,
         }
+
+    def calculate_total_fee(self, product_map: Dict[str, Product]) -> int:
+        total = 0
+        for pid, qty in self.orders.items():
+            product = product_map.get(pid)
+            if not product:
+                raise ValueError(f"Product ID {pid} not found")
+            total += product.price * qty  # price * quantity
+        return total
+
+    def get_order_items(
+        self, product_map: Dict[str, Product]
+    ) -> Dict[str, Dict[str, Any]]:
+        items = {}
+        for pid, qty in self.orders.items():
+            product = product_map.get(pid)
+            if not product:
+                raise ValueError(f"Product ID {pid} not found")
+            items[pid] = {
+                "name": product.product_name,
+                "price": product.price,
+                "quantity": qty,
+                "subtotal": product.price * qty,
+            }
+        return items
+
+    def __post_init__(self):
+        if self.order_fee < 0 or self.total_fee < 0 or self.tax < 0:
+            raise ValueError("order_fee, total_fee, and tax cannot be negative")

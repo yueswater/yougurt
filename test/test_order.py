@@ -4,10 +4,21 @@ from uuid import uuid4
 import pytest
 
 from src.models.order import Order
+from src.models.product import Product
 
 
 def test_order_valid_data(valid_order):
     assert valid_order.shipping_status == "pending"
+
+
+def test_order_calculate_total_fee(valid_order):
+    product_map = {
+        "P001": Product(product_id="P001", product_name="優格原味", price=100),
+        "P002": Product(product_id="P002", product_name="優格蜂蜜", price=120),
+    }
+    valid_order.orders = {"P001": 2, "P002": 1}  # 100 * 2  # 120 * 1
+    total = valid_order.calculate_total_fee(product_map)
+    assert total == 320
 
 
 def test_order_negative_total_fee():
