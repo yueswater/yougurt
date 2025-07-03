@@ -1,25 +1,10 @@
-from datetime import datetime
-from uuid import uuid4
-
-from src.models.member import Member
 from src.repos.member_repo import GoogleSheetMemberRepository
 
 
 def main():
     repo = GoogleSheetMemberRepository()
-
-    test_member = Member(
-        member_id=uuid4(),
-        line_id="sungbonayue",
-        member_name="宋品岳",
-        create_at=datetime.now(),
-        order_type="monthly",
-        remain_delivery=6,
-        prepaid=3000,
-    )
-
-    repo.add(test_member)
-    print("測試會員已寫入 Google Sheet！")
+    repo.get_all()
+    print(repo.get_all())
 
 
 if __name__ == "__main__":
