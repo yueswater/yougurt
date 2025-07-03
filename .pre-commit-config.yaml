@@ -1,0 +1,65 @@
+default_language_version:
+  python: python3.12
+
+repos:
+  # Remove unused imports and variables
+  - repo: https://github.com/PyCQA/autoflake
+    rev: v2.2.1
+    hooks:
+      - id: autoflake
+        args: ["--remove-all-unused-imports", "--remove-unused-variables", "--in-place", "--expand-star-imports"]
+
+  # Sort imports (using Black profile)
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        args: ['--profile', 'black']
+
+  # Auto-fix formatting (complements Black)
+  - repo: https://github.com/pre-commit/mirrors-autopep8
+    rev: v1.6.0
+    hooks:
+      - id: autopep8
+        args: ["--max-line-length=120",  "--in-place"]
+
+  # Final formatter (opinionated, strict)
+  - repo: https://github.com/psf/black
+    rev: 22.8.0
+    hooks:
+      - id: black
+        language_version: python3.12
+
+  # Static code analysis
+  - repo: https://github.com/PyCQA/flake8
+    rev: 5.0.4
+    hooks:
+      - id: flake8
+        additional_dependencies:
+          - flake8-bugbear
+          - flake8-implicit-str-concat
+        args: ['--max-line-length=120']
+
+  # Python syntax upgrade
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v2.38.2
+    hooks:
+      - id: pyupgrade
+        args: ['--py38-plus', '--keep-runtime-typing']
+
+  # Basic file cleanup (BOM, trailing spaces, EOF)
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.3.0
+    hooks:
+      - id: fix-byte-order-marker
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+
+  # Run tests before committing (pytest)
+  - repo: local
+    hooks:
+      - id: pytest-check
+        name: Run pytest before commit
+        entry: pytest test/
+        language: system
+        types: [python]

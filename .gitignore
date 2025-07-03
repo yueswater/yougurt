@@ -2,3 +2,8 @@
 __pycache__/
 
 .env
+
+credentials/
+sandbox/
+
+.DS_Store

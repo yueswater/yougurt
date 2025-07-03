@@ -1,26 +1,52 @@
-from uuid import UUID, uuid4
 from dataclasses import dataclass
-from typing import Dict
+from datetime import datetime
+from typing import Any, Dict
+from uuid import UUID
+
+from src.utils.format_datetime import format_datetime
+from src.utils.format_uuid import format_uuid
+
 
 @dataclass
 class Member:
     member_id: UUID
     line_id: str
     member_name: str
+    create_at: datetime
     order_type: str
     remain_delivery: int
+    remain_volume: int
     prepaid: int
 
     @classmethod
-    def from_file(cls, data: Dict):
-        uid = data["member_id"]
-        if not isinstance(uid, UUID):
-            uid = UUID(uid)
+    def from_dict(cls, data: Dict) -> "Member":
         return cls(
-            member_id=uid,
+            member_id=format_uuid(data["member_id"]),
             line_id=data["line_id"],
             member_name=data["member_name"],
+            create_at=format_datetime(data["create_at"]),
             order_type=data["order_type"],
             remain_delivery=data["remain_delivery"],
-            prepaid=data["prepaid"]
+            remain_volume=data["remain_volume"],
+            prepaid=data["prepaid"],
         )
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "member_id": self.member_id,
+            "line_id": self.line_id,
+            "member_name": self.member_name,
+            "create_at": self.create_at,
+            "order_type": self.order_type,
+            "remain_delivery": self.remain_delivery,
+            "remain_volume": self.remain_volume,
+            "prepaid": self.prepaid,
+        }
+
+    def __post_init__(self):
+        if self.remain_volume < 0:
+            raise ValueError("remain_volume cannot be negative")
+        if self.remain_delivery < 0:
+            raise ValueError("remain_delivery cannot be negative")
+        if self.prepaid < 0:
+            raise ValueError("prepaid cannot be negative")
