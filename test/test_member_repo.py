@@ -16,7 +16,7 @@ def test_add_member_should_call_append_row():
         prepaid=1000,
     )
 
-    repo = GoogleSheetMemberRepository()
+    repo = GoogleSheetMemberRepository.__new__(GoogleSheetMemberRepository)
     repo.worksheet = MagicMock()
     repo.add(member)
 
