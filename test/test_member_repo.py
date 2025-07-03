@@ -13,6 +13,7 @@ def test_add_member_should_call_append_row():
         create_at=datetime.now(),
         order_type="monthly",
         remain_delivery=3,
+        remain_volume=12,
         prepaid=1000,
     )
 

@@ -34,6 +34,7 @@ class GoogleSheetMemberRepository(MemberRepository):
             data["create_at"].isoformat(),
             data["order_type"],
             data["remain_delivery"],
+            data["remain_volume"],
             data["prepaid"],
         ]
         self.worksheet.append_row(row)
@@ -50,6 +51,7 @@ class GoogleSheetMemberRepository(MemberRepository):
                 "create_at": row["Create at"],
                 "order_type": row["Order Type"],
                 "remain_delivery": row["Remain Delivery"],
+                "remain_volume": row["Remain Volume"],
                 "prepaid": row["Prepaid"],
             }
             members.append(Member.from_dict(data))

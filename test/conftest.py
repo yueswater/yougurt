@@ -16,6 +16,7 @@ def valid_member():
         create_at=datetime.now(),
         order_type="monthly",
         remain_delivery=4,
+        remain_volume=12,
         prepaid=1000,
     )
 

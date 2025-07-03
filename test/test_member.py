@@ -20,6 +20,7 @@ def test_member_negative_remain_delivery():
             create_at=datetime.now(),
             order_type="once",
             remain_delivery=-1,
+            remain_volume=1,
             prepaid=0,
         )
     assert "remain_delivery cannot be negative" in str(exc.value)
@@ -34,6 +35,7 @@ def test_member_negative_prepaid():
             create_at=datetime.now(),
             order_type="once",
             remain_delivery=0,
+            remain_volume=1,
             prepaid=-500,
         )
     assert "prepaid cannot be negative" in str(exc.value)
