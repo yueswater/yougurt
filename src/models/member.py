@@ -15,6 +15,7 @@ class Member:
     create_at: datetime
     order_type: str
     remain_delivery: int
+    remain_volume: int
     prepaid: int
 
     @classmethod
@@ -26,6 +27,7 @@ class Member:
             create_at=format_datetime(data["create_at"]),
             order_type=data["order_type"],
             remain_delivery=data["remain_delivery"],
+            remain_volume=data["remain_volume"],
             prepaid=data["prepaid"],
         )
 
@@ -37,10 +39,13 @@ class Member:
             "create_at": self.create_at,
             "order_type": self.order_type,
             "remain_delivery": self.remain_delivery,
+            "remain_volume": self.remain_volume,
             "prepaid": self.prepaid,
         }
 
     def __post_init__(self):
+        if self.remain_volume < 0:
+            raise ValueError("remain_volume cannot be negative")
         if self.remain_delivery < 0:
             raise ValueError("remain_delivery cannot be negative")
         if self.prepaid < 0:
