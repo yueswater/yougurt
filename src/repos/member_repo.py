@@ -41,6 +41,7 @@ class GoogleSheetMemberRepository(MemberRepository):
     def get_all(self) -> List[Member]:
         rows = self.worksheet.get_all_records()
         members = []
+
         for row in rows:
             data = {
                 "member_id": row["Member ID"],
@@ -60,4 +61,4 @@ class GoogleSheetMemberRepository(MemberRepository):
             member_id = UUID(member_id)
 
         member = next((m for m in all_members if m.member_id == member_id), None)
-        return member.to_dict() if member else None
+        return member
