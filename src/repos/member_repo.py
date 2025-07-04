@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 from typing import List, Optional, Union
 from uuid import UUID
 import logging
+import uuid
+
 
 from src.models.member import Member
 from src.utils.sheet_client import get_worksheet
@@ -60,13 +62,8 @@ class GoogleSheetMemberRepository(MemberRepository):
 
     def get_by_member_id(self, member_id: Union[str, UUID]) -> Optional[Member]:
         all_members = self.get_all()
-        if not isinstance(member_id, UUID):
-            member_id = UUID(member_id)
+        # if not isinstance(member_id, UUID):
+        #     member_id = UUID(member_id)
 
         member = next((m for m in all_members if m.member_id == member_id), None)
         return member
-
-
-def save_member(member_data: dict):
-    # 這邊之後可以串接 Google Sheets 或資料庫
-    pass

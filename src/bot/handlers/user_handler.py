@@ -4,8 +4,11 @@ from datetime import datetime
 from linebot.models import TextSendMessage
 from bot.utils.membership_utils import check_if_user_exists
 from linebot import LineBotApi
-from repos.member_repo import save_member
+from models.member import Member
+from repos.member_repo import GoogleSheetMemberRepository
 import logging
+
+repo = GoogleSheetMemberRepository()
 
 bind_state = {}  # user_id -> dict
 
@@ -74,8 +77,9 @@ def complete_binding(user_id: str, line_bot_api, real_name: str, phone: str):
 
     logging.info("準備儲存會員資料：%s", member_data)
     try:
-        save_member(member_data)
-        logging.info("會員資料已儲存：%s", member_data)
+        member = Member.from_dict(member_data)
+        repo.add(member)
+        logging.debug(f"已經成功加入會員資料")
     except Exception as e:
         logging.error("會員資料儲存失敗：%s", str(e))
         return TextSendMessage(text="⚠️ 資料儲存失敗，請稍後再試")
