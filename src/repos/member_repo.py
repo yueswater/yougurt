@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional, Union
 from uuid import UUID
+import logging
 
 from src.models.member import Member
 from src.utils.sheet_client import get_worksheet
@@ -64,3 +65,8 @@ class GoogleSheetMemberRepository(MemberRepository):
 
         member = next((m for m in all_members if m.member_id == member_id), None)
         return member
+
+
+def save_member(member_data: dict):
+    # 這邊之後可以串接 Google Sheets 或資料庫
+    pass
