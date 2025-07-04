@@ -2,7 +2,7 @@
 import uuid
 from datetime import datetime
 from linebot.models import TextSendMessage
-from bot.utils.membership_utils import check_user_exist
+from src.bot.utils.member_utils import check_user_exist
 from linebot import LineBotApi
 from models.member import Member
 from repos.member_repo import GoogleSheetMemberRepository
@@ -41,11 +41,7 @@ def handle_binding_step(line_id: str, text: str, line_bot_api: LineBotApi):
 
     elif state["step"] == "waiting_confirm":
         if text == "是":
-            # ✅ 檢查是否已綁定
-            if check_user_exist(line_id):
-                bind_state.pop(line_id, None)  # 清除狀態避免卡住
-                return TextSendMessage(text="⚠️ 您的帳號已完成綁定，請勿重複註冊。")
-
+            bind_state.pop(line_id, None)  # 清除狀態避免卡住
             name = state["name"]
             phone = state["phone"]
             return complete_binding(line_id, line_bot_api, name, phone)
