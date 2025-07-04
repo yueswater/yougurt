@@ -5,7 +5,6 @@ from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage
 from linebot.models import TextSendMessage
-# from bot.handlers.user_handler import bind_user_profile
 from bot.handlers import user_handler
 from dotenv import load_dotenv
 import os
@@ -36,9 +35,9 @@ def callback():
     try:
         handler.handle(body, signature)
     except InvalidSignatureError:
-        abort(400)
+        return "Invalid signature", 400
 
-    return "OK"
+    return "OK", 200
 
 
 @handler.add(MessageEvent, message=TextMessage)

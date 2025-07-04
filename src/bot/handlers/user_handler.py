@@ -2,7 +2,7 @@
 import uuid
 from datetime import datetime
 from linebot.models import TextSendMessage
-from bot.utils.membership_utils import check_if_user_exists
+from bot.utils.membership_utils import check_user_exist
 from linebot import LineBotApi
 from models.member import Member
 from repos.member_repo import GoogleSheetMemberRepository
@@ -10,14 +10,15 @@ import logging
 
 repo = GoogleSheetMemberRepository()
 
-bind_state = {}  # user_id -> dict
+bind_state = {}  # line_id -> dict
 
-def initiate_binding(user_id: str):
-    bind_state[user_id] = {"step": "waiting_name"}
+def initiate_binding(line_id: str):
+    bind_state[line_id] = {"step": "waiting_name"}
     return TextSendMessage(text="請輸入您的本名 👤")
 
-def handle_binding_step(user_id: str, text: str, line_bot_api: LineBotApi):
-    state = bind_state.get(user_id)
+@check_user_exist
+def handle_binding_step(line_id: str, text: str, line_bot_api: LineBotApi):
+    state = bind_state.get(line_id)
 
     if state["step"] == "waiting_name":
         state["name"] = text
@@ -41,32 +42,32 @@ def handle_binding_step(user_id: str, text: str, line_bot_api: LineBotApi):
     elif state["step"] == "waiting_confirm":
         if text == "是":
             # ✅ 檢查是否已綁定
-            if check_if_user_exists(user_id):
-                bind_state.pop(user_id, None)  # 清除狀態避免卡住
+            if check_user_exist(line_id):
+                bind_state.pop(line_id, None)  # 清除狀態避免卡住
                 return TextSendMessage(text="⚠️ 您的帳號已完成綁定，請勿重複註冊。")
 
             name = state["name"]
             phone = state["phone"]
-            return complete_binding(user_id, line_bot_api, name, phone)
+            return complete_binding(line_id, line_bot_api, name, phone)
 
         elif text == "否":
-            bind_state[user_id] = {"step": "waiting_name"}  # 重設狀態
+            bind_state[line_id] = {"step": "waiting_name"}  # 重設狀態
             return TextSendMessage(text="請重新輸入您的本名 👤")
 
         else:
             return TextSendMessage(text="請輸入「是」或「否」來確認資訊是否正確")
 
-def complete_binding(user_id: str, line_bot_api, real_name: str, phone: str):
+def complete_binding(line_id: str, line_bot_api, real_name: str, phone: str):
     try:
-        profile = line_bot_api.get_profile(user_id)
+        profile = line_bot_api.get_profile(line_id)
         display_name = profile.display_name
     except Exception as e:
-        logging.error("無法取得使用者 %s 的 LINE 資料：%s", user_id, str(e))
+        logging.error("無法取得使用者 %s 的 LINE 資料：%s", line_id, str(e))
         return TextSendMessage(text="無法取得您的 LINE 名稱，請稍後再試")
 
     member_data = {
         "member_id": str(uuid.uuid4()),
-        "line_id": str(user_id),
+        "line_id": str(line_id),
         "member_name": str(real_name),
         "create_at": datetime.now().isoformat(),
         "order_type": "",
@@ -84,10 +85,10 @@ def complete_binding(user_id: str, line_bot_api, real_name: str, phone: str):
         logging.error("會員資料儲存失敗：%s", str(e))
         return TextSendMessage(text="⚠️ 資料儲存失敗，請稍後再試")
 
-    bind_state.pop(user_id, None)
+    bind_state.pop(line_id, None)
     return TextSendMessage(text=f"您好，{real_name}，已成功綁定會員！")
 
-def is_in_binding_process(user_id: str) -> bool:
-    return user_id in bind_state
+def is_in_binding_process(line_id: str) -> bool:
+    return line_id in bind_state
 
 
