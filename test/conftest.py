@@ -36,6 +36,5 @@ def valid_order(valid_member):
         order_fee=100,
         total_fee=110,
         address="somewhere",
-        invoice="A000000000",
-        tax=10,
+        tax=5.3,
     )

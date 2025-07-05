@@ -43,7 +43,6 @@ class GoogleSheetOrderRepository(OrderRepository):
             data["order_fee"],
             data["total_fee"],
             data["address"],
-            data["invoice"],
             data["tax"],
         ]
         self.worksheet.append_row(row)
@@ -64,7 +63,6 @@ class GoogleSheetOrderRepository(OrderRepository):
                 "order_fee": row["Order Fee"],
                 "total_fee": row["Total Fee"],
                 "address": row["Address"],
-                "invoice": row["Invoice"],
                 "tax": row["Tax"],
             }
             orders.append(Order.from_dict(data))
