@@ -10,6 +10,7 @@ from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 
 from bot.handlers import user_handler
+from bot import constants
 
 load_dotenv()
 app = Flask(__name__)
@@ -55,19 +56,19 @@ def handle_message(event):
     if user_handler.is_binding_session_active(user_id):
         # If you are already a member, please remind him not to continue tying
         if user_handler.member_service.exists(user_id):
-            reply = TextSendMessage(text="您已經是會員囉，無需再次綁定～")
+            reply = TextSendMessage(text=constants.Message.get("ALREADY_MEMBER", ""))
         else:
             reply = user_handler.handle_binding_step(user_id, text, line_bot_api)
     # If you enter "Binding Member"
     elif text == "綁定會員":
         if user_handler.member_service.exists(user_id):
-            reply = TextSendMessage(text="您已經是會員囉，無需再次綁定～")
+            reply = TextSendMessage(text=constants.Message.get("ALREADY_MEMBER", ""))
         else:
             reply = user_handler.initiate_binding(user_id)
 
     # Other messages
     else:
-        reply = TextSendMessage(text="請使用圖文選單開始操作，或輸入『綁定會員』")
+        reply = TextSendMessage(text=constants.Message.get("OHTER_NEEDED", ""))
     # Reply to the user
     line_bot_api.reply_message(event.reply_token, reply)
 
