@@ -32,10 +32,12 @@ class GoogleSheetMemberRepository(MemberRepository):
             data["line_id"],
             data["member_name"],
             data["create_at"].isoformat(),
+            data["phone"],
             data["order_type"],
             data["remain_delivery"],
             data["remain_volume"],
             data["prepaid"],
+            data["valid_member"],
         ]
         self.worksheet.append_row(row)
 
@@ -49,10 +51,12 @@ class GoogleSheetMemberRepository(MemberRepository):
                 "line_id": row["Line ID"],
                 "member_name": row["Member Name"],
                 "create_at": row["Create at"],
+                "phone": row["Phone"],
                 "order_type": row["Order Type"],
                 "remain_delivery": row["Remain Delivery"],
                 "remain_volume": row["Remain Volume"],
                 "prepaid": row["Prepaid"],
+                "valid_member": row["Valid Member"],
             }
             members.append(Member.from_dict(data))
         return members

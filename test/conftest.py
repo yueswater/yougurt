@@ -14,10 +14,12 @@ def valid_member():
         line_id="Utest",
         member_name="測試用戶",
         create_at=datetime.now(),
+        phone="0912345678",
         order_type="monthly",
         remain_delivery=4,
         remain_volume=12,
         prepaid=1000,
+        valid_member=False,
     )
 
 

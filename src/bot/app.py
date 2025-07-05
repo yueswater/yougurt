@@ -47,7 +47,9 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    user_id = event.source.user_id
+    user_id = (
+        event.source.user_id
+    )  # Line unique ID, e.g., U5bd3d61b7c6235a344238adbe25df5df
     text = event.message.text.strip()
     # If the binding process is in progress
     if user_handler.is_binding_session_active(user_id):
