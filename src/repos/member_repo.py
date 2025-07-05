@@ -32,10 +32,12 @@ class GoogleSheetMemberRepository(MemberRepository):
             data["line_id"],
             data["member_name"],
             data["create_at"].isoformat(),
+            data["phone"],
             data["order_type"],
             data["remain_delivery"],
             data["remain_volume"],
             data["prepaid"],
+            data["valid_member"],
         ]
         self.worksheet.append_row(row)
 
@@ -49,18 +51,21 @@ class GoogleSheetMemberRepository(MemberRepository):
                 "line_id": row["Line ID"],
                 "member_name": row["Member Name"],
                 "create_at": row["Create at"],
+                "phone": row["Phone"],
                 "order_type": row["Order Type"],
                 "remain_delivery": row["Remain Delivery"],
                 "remain_volume": row["Remain Volume"],
                 "prepaid": row["Prepaid"],
+                "valid_member": row["Valid Member"],
             }
             members.append(Member.from_dict(data))
         return members
 
     def get_by_member_id(self, member_id: Union[str, UUID]) -> Optional[Member]:
         all_members = self.get_all()
-        if not isinstance(member_id, UUID):
-            member_id = UUID(member_id)
-
         member = next((m for m in all_members if m.member_id == member_id), None)
         return member
+
+    def exists(self, line_id: str) -> bool:
+        all_members = self.get_all()
+        return any(record.line_id == line_id for record in all_members)

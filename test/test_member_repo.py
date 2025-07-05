@@ -11,10 +11,12 @@ def test_add_member_should_call_append_row():
         line_id="Utest123",
         member_name="測試會員",
         create_at=datetime.now(),
+        phone="0912345678",
         order_type="monthly",
         remain_delivery=3,
         remain_volume=12,
         prepaid=1000,
+        valid_member=False,
     )
 
     repo = GoogleSheetMemberRepository.__new__(GoogleSheetMemberRepository)

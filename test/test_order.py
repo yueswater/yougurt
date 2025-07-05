@@ -34,7 +34,6 @@ def test_order_negative_total_fee():
             order_fee=200,
             total_fee=-10,
             address="不良地址",
-            invoice="X000000001",
-            tax=10,
+            tax=5.3,
         )
     assert "total_fee" in str(exc.value)

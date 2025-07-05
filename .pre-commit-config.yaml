@@ -1,5 +1,5 @@
 default_language_version:
-  python: python3.12
+  python: python3
 
 repos:
   # Remove unused imports and variables
@@ -28,7 +28,7 @@ repos:
     rev: 22.8.0
     hooks:
       - id: black
-        language_version: python3.12
+        language_version: python3
 
   # Static code analysis
   - repo: https://github.com/PyCQA/flake8
