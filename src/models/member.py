@@ -17,7 +17,7 @@ class Member:
     order_type: str
     remain_delivery: int
     remain_volume: int
-    prepaid: int = 0  # take value only when valid_member = True
+    prepaid: int = 0
     valid_member: bool = False
 
     @classmethod
