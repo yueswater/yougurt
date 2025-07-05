@@ -1,34 +1,39 @@
 # src/bot/app.py
 
-from flask import Flask, request, abort
+import logging
+import os
+
+from dotenv import load_dotenv
+from flask import Flask, request
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
-from linebot.models import MessageEvent, TextMessage
-from linebot.models import TextSendMessage
+from linebot.models import MessageEvent, TextMessage, TextSendMessage
+
 from bot.handlers import user_handler
-from dotenv import load_dotenv
-import os
-import logging
 
 load_dotenv()
 app = Flask(__name__)
 
+# TODO: extract to be logger
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
 )
 
-
-# 👉 環境變數或硬編碼 Channel Secret / Token
+# Secret token
 CHANNEL_ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
 CHANNEL_SECRET = os.getenv("CHANNEL_SECRET")
 
+# Initialize Line Bot & handler
 line_bot_api = LineBotApi(CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(CHANNEL_SECRET)
 
 
 @app.route("/callback", methods=["POST"])
 def callback():
+    """
+    Verify signature when connecting to Line service.
+    """
     signature = request.headers["X-Line-Signature"]
     body = request.get_data(as_text=True)
 
@@ -44,20 +49,26 @@ def callback():
 def handle_message(event):
     user_id = event.source.user_id
     text = event.message.text.strip()
-
-    if user_handler.is_in_binding_process(user_id):
-        reply = user_handler.handle_binding_step(user_id, text, line_bot_api)
-
+    # If the binding process is in progress
+    if user_handler.is_binding_session_active(user_id):
+        # If you are already a member, please remind him not to continue tying
+        if user_handler.member_service.exists(user_id):
+            reply = TextSendMessage(text="您已經是會員囉，無需再次綁定～")
+        else:
+            reply = user_handler.handle_binding_step(user_id, text, line_bot_api)
+    # If you enter "Binding Member"
     elif text == "綁定會員":
-        reply = user_handler.initiate_binding(user_id)
+        if user_handler.member_service.exists(user_id):
+            reply = TextSendMessage(text="您已經是會員囉，無需再次綁定～")
+        else:
+            reply = user_handler.initiate_binding(user_id)
 
+    # Other messages
     else:
         reply = TextSendMessage(text="請使用圖文選單開始操作，或輸入『綁定會員』")
-
+    # Reply to the user
     line_bot_api.reply_message(event.reply_token, reply)
 
-
-# src/bot/app.py 最底部加上 👇
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5050)
