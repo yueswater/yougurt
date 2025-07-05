@@ -9,8 +9,8 @@ from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 
-from bot.handlers import user_handler
 from bot import constants
+from bot.handlers import user_handler
 
 load_dotenv()
 app = Flask(__name__)
@@ -68,7 +68,7 @@ def handle_message(event):
 
     # Other messages
     else:
-        reply = TextSendMessage(text=constants.Message.get("OTHER_NEEDED",""))
+        reply = TextSendMessage(text=constants.Message.get("OTHER_NEEDED", ""))
     # Reply to the user
     line_bot_api.reply_message(event.reply_token, reply)
 

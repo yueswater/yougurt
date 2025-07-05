@@ -3,10 +3,10 @@ import logging
 from linebot import LineBotApi
 from linebot.models import TextSendMessage
 
+from bot import constants
 from repos.member_repo import GoogleSheetMemberRepository
 from src.core.session.bind_session_store import BindSessionStore
 from src.services.member_service import MemberService
-from bot import constants
 
 repo = GoogleSheetMemberRepository()
 session = BindSessionStore()
@@ -48,7 +48,9 @@ def handle_waiting_confirm(
             # Clear session storage
             session.clear_session(line_id)
             logging.info("使用者 LINE 顯示名稱為：%s", display_name)
-            return TextSendMessage(text=constants.Message.get("BIND_SUCESS", "").format(name=name))
+            return TextSendMessage(
+                text=constants.Message.get("BIND_SUCESS", "").format(name=name)
+            )
         except Exception:
             logging.exception("會員建立失敗")
             return TextSendMessage(text="資料儲存失敗，請稍後再試")
