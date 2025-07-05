@@ -68,7 +68,7 @@ def handle_message(event):
 
     # Other messages
     else:
-        reply = TextSendMessage(text=constants.Message.get("OHTER_NEEDED", ""))
+        reply = TextSendMessage(text=constants.Message.get("OTHER_NEEDED",""))
     # Reply to the user
     line_bot_api.reply_message(event.reply_token, reply)
 
