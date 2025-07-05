@@ -19,11 +19,13 @@ class MemberService:
             "line_id": line_id,
             "member_name": name,
             "create_at": datetime.now().isoformat(),
+            "phone": phone,
             "order_type": "",
             "remain_delivery": 0,
             "remain_volume": 0,
             "prepaid": 17160,
             "display_name": display_name,
+            "valid_member": False,
         }
         member = Member.from_dict(member_data)
         self.repo.add(member)
