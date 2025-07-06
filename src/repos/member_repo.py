@@ -12,6 +12,14 @@ class MemberRepository(ABC):
         pass
 
     @abstractmethod
+    def update(self, member: Member) -> None:
+        pass
+
+    @abstractmethod
+    def delete(self, line_id: str) -> None:
+        pass
+
+    @abstractmethod
     def get_all(self) -> List[Member]:
         pass
 
@@ -62,10 +70,52 @@ class GoogleSheetMemberRepository(MemberRepository):
         return members
 
     def get_by_member_id(self, member_id: Union[str, UUID]) -> Optional[Member]:
-        all_members = self.get_all()
-        member = next((m for m in all_members if m.member_id == member_id), None)
-        return member
+        return next((m for m in self.get_all() if m.member_id == member_id), None)
+
+    def get_by_line_id(self, line_id: str) -> Optional[Member]:
+        return next((m for m in self.get_all() if m.line_id == line_id), None)
 
     def exists(self, line_id: str) -> bool:
-        all_members = self.get_all()
-        return any(record.line_id == line_id for record in all_members)
+        return any(m.line_id == line_id for m in self.get_all())
+
+    def is_valid_member(self, line_id: str) -> bool:
+        member = self.get_by_line_id(line_id)
+        return member.valid_member if member else False
+
+    def update(self, member: Member) -> None:
+        all_rows = self.worksheet.get_all_records()
+
+        target_row_idx = next(
+            (i for i, row in enumerate(all_rows) if row["Line ID"] == member.line_id),
+            None,
+        )
+
+        if target_row_idx is None:
+            raise ValueError(f"找不到 line_id={member.line_id} 的會員")
+
+        target_row_idx + 2
+
+        data = member.to_dict()
+        new_row = [
+            str(data["member_id"]),
+            data["line_id"],
+            data["member_name"],
+            data["create_at"].isoformat(),
+            data["phone"],
+            data["order_type"],
+            data["remain_delivery"],
+            data["remain_volume"],
+            data["prepaid"],
+            data["valid_member"],
+        ]
+
+        # Overwrite data
+        self.worksheet.update(values=[new_row], range_name="A2:J2")
+
+    def delete(self, line_id: str) -> None:
+        member = self.get_by_line_id(line_id)
+        if not member:
+            raise ValueError(f"找不到 line_id={member.line_id} 的會員")
+
+        member.valid_member = False
+        self.update(member)

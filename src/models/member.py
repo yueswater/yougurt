@@ -27,7 +27,7 @@ class Member:
             line_id=data["line_id"],
             member_name=data["member_name"],
             create_at=format_datetime(data["create_at"]),
-            phone=data["phone"],
+            phone=str(data["phone"]),
             order_type=data["order_type"],
             remain_delivery=data["remain_delivery"],
             remain_volume=data["remain_volume"],

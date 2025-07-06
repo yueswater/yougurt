@@ -19,7 +19,8 @@ dependencies = [
     "self (>=2020.12.3,<2021.0.0)",
     "poetry-plugin-shell (>=1.0.1,<2.0.0)",
     "fastapi (>=0.115.14,<0.116.0)",
-    "uvicorn (>=0.35.0,<0.36.0)"
+    "uvicorn (>=0.35.0,<0.36.0)",
+    "httpx (>=0.28.1,<0.29.0)"
 ]
 
 [tool.poetry]
@@ -46,7 +47,7 @@ build-backend = "poetry.core.masonry.api"
 minversion = "6.0"
 addopts = "-ra -q"
 testpaths = [
-    "test"
+    "tests"
 ]
 python_files = [
     "test_*.py"

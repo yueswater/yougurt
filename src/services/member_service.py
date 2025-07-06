@@ -33,3 +33,6 @@ class MemberService:
 
     def exists(self, line_id: str) -> bool:
         return self.repo.exists(line_id)
+
+    def check_valid_member(self, line_id: str) -> bool:
+        return self.repo.is_valid_member(line_id)
