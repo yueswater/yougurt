@@ -40,7 +40,7 @@ jobs:
       - name: Set up Google service account JSON
         run: |
           mkdir -p credentials
-          echo "${{ secrets.SERVICE_ACCOUNT_JSON }}" > credentials/yougurt-d4271d634d58.json
+          printf "%s" "${{ secrets.SERVICE_ACCOUNT_JSON }}" > credentials/yougurt-d4271d634d58.json
 
       - name: Export environment variables
         run: |
