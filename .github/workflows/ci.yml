@@ -37,10 +37,10 @@ jobs:
       - name: Install dependencies
         run: poetry install --no-interaction
 
-      - name: Set up Google service account JSON
+      - name: Decode Google service account JSON
         run: |
           mkdir -p credentials
-          printf "%s" "${{ secrets.SERVICE_ACCOUNT_JSON }}" > credentials/yougurt-d4271d634d58.json
+          echo "${{ secrets.SERVICE_ACCOUNT_JSON_B64 }}" | base64 --decode > credentials/yougurt-d4271d634d58.json
 
       - name: Export environment variables
         run: |
