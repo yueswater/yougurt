@@ -20,8 +20,7 @@ class Order:
     order_fee: int
     total_fee: int
     address: str
-    invoice: str
-    tax: int
+    tax: float
 
     @classmethod
     def from_dict(cls, data: Dict) -> "Order":
@@ -36,7 +35,6 @@ class Order:
             order_fee=data["order_fee"],
             total_fee=data["total_fee"],
             address=data["address"],
-            invoice=data["invoice"],
             tax=data["tax"],
         )
 
@@ -52,9 +50,16 @@ class Order:
             "order_fee": self.order_fee,
             "total_fee": self.total_fee,
             "address": self.address,
-            "invoice": self.invoice,
             "tax": self.tax,
         }
+
+    def tax_fee_formula(self):
+        return self.tax / (1 + self.tax)
+
+    def calculate_tax_fee(self, product_map: Dict[str, Product], pid: str) -> float:
+        product = product_map.get(pid)
+        tax_fee = product.price * self.tax_fee_formula()
+        return tax_fee
 
     def calculate_total_fee(self, product_map: Dict[str, Product]) -> int:
         total = 0

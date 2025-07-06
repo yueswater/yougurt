@@ -10,13 +10,15 @@ def main():
 
     test_member = Member(
         member_id=uuid4(),
-        line_id="piyan",
-        member_name="屁眼",
+        line_id="small_piyan",
+        member_name="小屁眼",
         create_at=datetime.now(),
+        phone="0912345678",
         order_type="monthly",
         remain_delivery=6,
         remain_volume=12,
         prepaid=3000,
+        valid_member=False,
     )
 
     repo.add(test_member)
