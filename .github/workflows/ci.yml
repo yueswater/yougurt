@@ -10,22 +10,44 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        python-version: [3.12]
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.12
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: ${{ matrix.python-version }}
 
       - name: Install Poetry
         run: |
           curl -sSL https://install.python-poetry.org | python3 -
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
+      - name: Cache Poetry dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pypoetry
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+
       - name: Install dependencies
         run: poetry install --no-interaction
+
+      - name: Decode Google service account JSON
+        run: |
+          mkdir -p credentials
+          echo "${{ secrets.SERVICE_ACCOUNT_JSON_B64 }}" | base64 --decode > credentials/yougurt-d4271d634d58.json
+
+      - name: Export environment variables
+        run: |
+          echo "GOOGLE_SERVICE_ACCOUNT_JSON_PATH=$PWD/credentials/yougurt-d4271d634d58.json" >> $GITHUB_ENV
+          echo "GOOGLE_SHEET_ID=${{ secrets.GOOGLE_SHEET_ID }}" >> $GITHUB_ENV
+          echo "LINE_CHANNEL_ACCESS_TOKEN=${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}" >> $GITHUB_ENV
+          echo "CHANNEL_SECRET=${{ secrets.CHANNEL_SECRET }}" >> $GITHUB_ENV
 
       - name: Run autoflake
         run: poetry run autoflake --remove-all-unused-imports --remove-unused-variables --in-place --expand-star-imports -r .
@@ -42,5 +64,5 @@ jobs:
       - name: Run flake8
         run: poetry run flake8
 
-      - name: Run tests
+      - name: Run pytest
         run: poetry run pytest

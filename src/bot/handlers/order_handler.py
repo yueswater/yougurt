@@ -3,21 +3,23 @@ import logging
 from linebot import LineBotApi
 from linebot.models import TextSendMessage
 
+from repos.member_repo import GoogleSheetMemberRepository
 from repos.order_repo import GoogleSheetOrderRepository
 from src.bot.utils.order_utils import parse_order_items
 from src.core.session.order_session_store import OrderSessionStore
 from src.services.member_service import MemberService
 
 order_session = OrderSessionStore()
-repo = GoogleSheetOrderRepository()
-member_service = MemberService(repo)
+order_repo = GoogleSheetOrderRepository()
+member_repo = GoogleSheetMemberRepository()
+member_service = MemberService(member_repo)
 
 
 def initiate_order(line_id: str) -> TextSendMessage:
     if not member_service.exists(line_id):
         return TextSendMessage(text="⚠️ 您尚未綁定會員，請先綁定會員後再下單。")
 
-    if not member_service.is_valid_member(line_id):
+    if not member_service.check_valid_member(line_id):
         return TextSendMessage(text="⚠️ 您尚未完成付款，請先付款後等待審核完成。")
 
     order_session.start_session(line_id)
