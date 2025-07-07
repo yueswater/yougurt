@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Yougurt{% endblock %}
+
+{% block content %}
+<div class="flex flex-col lg:flex-row items-center justify-between space-y-10 lg:space-y-0">
+
+  <!-- 左側文字區塊 -->
+  <div class="lg:w-1/2 space-y-6">
+    <h1 class="text-4xl lg:text-5xl font-bold leading-tight text-gray-900">
+      Startup Site Template <br> Built-with TailGrids Components
+    </h1>
+    <p class="text-gray-600 text-base">
+      With TailGrids, business and students thrive together. Business can perfectly match their staffing to changing demand throughout the dayed.
+    </p>
+    <div class="flex space-x-4">
+      <a href="/get-started" class="bg-[#ACD042] text-white px-6 py-3 rounded-md text-sm hover:bg-[#92B72B] transition-colors duration-300">Get Started</a>
+      <a href="/learn-more" class="text-[#ACD042] px-6 py-3 text-sm border border-[#ACD042] rounded-md hover:bg-[#F8FBEA] transition-colors duration-300">Learn More</a>
+    </div>
+
+    <div class="pt-6">
+      <span class="text-xs text-gray-400">Used by Thriving Brands</span>
+      <div class="flex items-center space-x-6 mt-2">
+        <img src="/static/img/logo_ayro.svg" alt="Ayro" class="h-5" />
+        <img src="/static/img/logo_graygrids.svg" alt="GrayGrids" class="h-5" />
+        <img src="/static/img/logo_uiblock.svg" alt="UIBlock" class="h-5" />
+      </div>
+    </div>
+  </div>
+
+  <!-- 右側圖片區塊 -->
+  <div class="lg:w-1/2">
+    <img src="/static/img/hero_yogurt.jpg" alt="Startup Hero" class="rounded-2xl shadow-md" />
+  </div>
+</div>
+{% endblock %}
