@@ -48,7 +48,7 @@ def bind():
                 "line_id": line_id,
                 "phone": phone,
                 "create_at": datetime.now().isoformat(),
-                "order_type": "一般會員",  # 你系統裡的預設值
+                "order_type": "一般會員",
                 "remain_delivery": 0,
                 "remain_volume": 0,
                 "prepaid": 0,
