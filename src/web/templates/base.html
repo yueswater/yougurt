@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Yougurt{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+    {% block head %}{% endblock %}
+</head>
+
+<body class="bg-gray-50 text-gray-900">
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md py-4 px-6 flex items-center">
+        <!-- 左：Logo -->
+        <div class="text-xl font-bold text-[#ACD042]">Ringo</div>
+
+        <!-- 中：Menu -->
+        <div class="flex-grow">
+            <ul class="flex space-x-6 text-sm pl-10">
+                <li><a href="/" class="hover:text-[#92B72B]">Home</a></li>
+                <li><a href="/payment" class="hover:text-[#92B72B]">Payment</a></li>
+                <li><a href="/features" class="hover:text-[#92B72B]">Features</a></li>
+            </ul>
+        </div>
+
+        <!-- 右：按鈕 -->
+        <div class="space-x-4">
+            <a href="/login" class="text-sm hover:text-[#92B72B]">Login</a>
+            <a href="/signup" class="bg-[#ACD042] text-white px-4 py-2 rounded text-sm hover:bg-[#92B72B]">Sign Up</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-10">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center text-xs text-gray-500 py-6">
+        &copy; {{ current_year }} Yougurt Company. All rights reserved.
+    </footer>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>
