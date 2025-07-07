@@ -37,18 +37,6 @@ jobs:
       - name: Install dependencies
         run: poetry install --no-interaction
 
-      - name: Decode Google service account JSON
-        run: |
-          mkdir -p credentials
-          echo "${{ secrets.SERVICE_ACCOUNT_JSON_B64 }}" | base64 --decode > credentials/yougurt-d4271d634d58.json
-
-      - name: Export environment variables
-        run: |
-          echo "GOOGLE_SERVICE_ACCOUNT_JSON_PATH=$PWD/credentials/yougurt-d4271d634d58.json" >> $GITHUB_ENV
-          echo "GOOGLE_SHEET_ID=${{ secrets.GOOGLE_SHEET_ID }}" >> $GITHUB_ENV
-          echo "LINE_CHANNEL_ACCESS_TOKEN=${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}" >> $GITHUB_ENV
-          echo "CHANNEL_SECRET=${{ secrets.CHANNEL_SECRET }}" >> $GITHUB_ENV
-
       - name: Run autoflake
         run: poetry run autoflake --remove-all-unused-imports --remove-unused-variables --in-place --expand-star-imports -r .
 
