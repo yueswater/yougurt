@@ -2,31 +2,27 @@
 name = "yougurt"
 version = "0.1.0"
 description = "A lightweight inventory and member management system"
-authors = [
-    { name = "Anthony Sung", email = "sungpinyue@gmail.com" }
-]
+authors = [{ name = "Anthony Sung", email = "sungpinyue@gmail.com" }]
 readme = "README.md"
 requires-python = ">=3.11,<4.0"
 dependencies = [
-    "pandas (>=2.3.0,<3.0.0)",
-    "line-bot-sdk (>=3.17.1,<4.0.0)",
-    "flask (>=3.1.1,<4.0.0)",
-    "python-dotenv (>=1.1.1,<2.0.0)",
-    "pytest (>=8.4.1,<9.0.0)",
-    "pre-commit (>=4.2.0,<5.0.0)",
-    "gspread (>=6.2.1,<7.0.0)",
-    "oauth2client (>=4.1.3,<5.0.0)",
-    "self (>=2020.12.3,<2021.0.0)",
-    "poetry-plugin-shell (>=1.0.1,<2.0.0)",
-    "fastapi (>=0.115.14,<0.116.0)",
-    "uvicorn (>=0.35.0,<0.36.0)",
-    "httpx (>=0.28.1,<0.29.0)"
+    "pandas>=2.3.0,<3.0.0",
+    "line-bot-sdk>=3.17.1,<4.0.0",
+    "flask>=3.1.1,<4.0.0",
+    "python-dotenv>=1.1.1,<2.0.0",
+    "pytest>=8.4.1,<9.0.0",
+    "pre-commit>=4.2.0,<5.0.0",
+    "gspread>=6.2.1,<7.0.0",
+    "oauth2client>=4.1.3,<5.0.0",
+    "self>=2020.12.3,<2021.0.0",
+    "poetry-plugin-shell>=1.0.1,<2.0.0",
+    "fastapi>=0.115.14,<0.116.0",
+    "uvicorn>=0.35.0,<0.36.0",
+    "httpx>=0.28.1,<0.29.0"
 ]
 
 [tool.poetry]
-packages = [
-    { include = "src" }
-]
+packages = [{ include = "src" }]
 
 [tool.poetry.group.dev.dependencies]
 black = "^25.1.0"
@@ -46,15 +42,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "-ra -q"
-testpaths = [
-    "tests"
-]
-python_files = [
-    "test_*.py"
-]
-python_classes = [
-    "Test*"
-]
-python_functions = [
-    "test_*"
-]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
