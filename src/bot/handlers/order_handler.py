@@ -112,7 +112,7 @@ def initiate_order(line_id: str) -> TextSendMessage:
     if not member_service.exists(line_id):
         return TextSendMessage(text="您尚未綁定會員，請先綁定會員後再下單。")
 
-    if not member_service.is_valid_member(line_id):
+    if not member_service.check_valid_member(line_id):
         return TextSendMessage(text="您尚未完成付款，請先付款後等待審核完成。")
 
     order_session.start_session(line_id)
