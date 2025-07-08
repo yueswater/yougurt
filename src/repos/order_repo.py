@@ -32,18 +32,27 @@ class GoogleSheetOrderRepository(OrderRepository):
 
     def add(self, order: Order) -> None:
         data = order.to_dict()
+
+        orders_display = "、".join(
+            f"{pid} * {qty}" for pid, qty in data["orders"].items()
+        )
+
         row = [
             str(data["order_id"]),
             data["order_date"].isoformat(),
-            data["shipping_date"].isoformat(),
-            data["shipping_status"],
+            data["confirmed_order"],  # OrderStatus name
+            data["desired_date"].isoformat(),
+            data["deliver_date"].isoformat(),
+            data["deliver_status"],  # DeliverStatus name
             data["payment_method"],
             str(data["member_id"]),
-            json.dumps(data["orders"]),
-            data["order_fee"],
-            data["total_fee"],
+            orders_display,
+            str(data["order_fee"]),
+            str(data["total_fee"]),
+            data["recipient"],
             data["address"],
-            data["tax"],
+            data["invoice"],
+            str(data["tax"]),
         ]
         self.worksheet.append_row(row)
 
@@ -55,15 +64,19 @@ class GoogleSheetOrderRepository(OrderRepository):
             data = {
                 "order_id": row["Order ID"],
                 "order_date": row["Order Date"],
-                "shipping_date": row["Shipping Date"],
-                "shipping_status": row["Shipping Status"],
+                "confirmed_order": row["Confirmed Order"],
+                "desired_date": row["Desired Date"],
+                "deliver_date": row["Deliver Date"],
+                "deliver_status": row["Deliver Status"],
                 "payment_method": row["Payment Method"],
                 "member_id": row["Member ID"],
                 "orders": json.loads(row["Orders"]),
                 "order_fee": row["Order Fee"],
                 "total_fee": row["Total Fee"],
+                "recipient": row["Recipient"],
                 "address": row["Address"],
-                "tax": row["Tax"],
+                "invoice": row["Invoice"],
+                "tax": float(row["Tax"]),
             }
             orders.append(Order.from_dict(data))
         return orders

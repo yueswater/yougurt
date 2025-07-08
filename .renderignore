@@ -1,10 +1,9 @@
-.venv/
 __pycache__/
-
+*.pyc
+*.pyo
+*.db
+.idea/
 .env
-
 credentials/
 sandbox/
-
-
-.DS_Store
+tests/

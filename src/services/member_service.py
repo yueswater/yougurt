@@ -31,6 +31,9 @@ class MemberService:
         self.repo.add(member)
         return member
 
+    def get_by_line_id(self, line_id: str) -> Member:
+        return next(m for m in self.repo.get_all() if m.line_id == line_id)
+
     def exists(self, line_id: str) -> bool:
         return self.repo.exists(line_id)
 

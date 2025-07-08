@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: linebot
+    env: python
+    buildCommand: "poetry install"
+    startCommand: "poetry run python -m src.bot.app"
+    envVars:
+      - key: LINE_CHANNEL_ACCESS_TOKEN
+        sync: false
+      - key: CHANNEL_SECRET
+        sync: false

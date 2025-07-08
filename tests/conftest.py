@@ -4,7 +4,7 @@ from uuid import uuid4
 import pytest
 
 from src.models.member import Member
-from src.models.order import Order
+from src.models.order import DeliverStatus, Order, OrderStatus
 
 
 @pytest.fixture
@@ -28,13 +28,17 @@ def valid_order(valid_member):
     return Order(
         order_id=uuid4(),
         order_date=datetime.now(),
-        shipping_date=datetime.now(),
-        shipping_status="pending",
+        confirmed_order=OrderStatus.CONFIRMED,
+        desired_date=datetime.now(),
+        deliver_date=datetime.now(),
+        deliver_status=DeliverStatus.DELIVERED,
         payment_method="cash",
         member_id=valid_member.member_id,
         orders={"A": 1},
         order_fee=100,
         total_fee=110,
+        recipient="測試人",
         address="somewhere",
+        invoice="INV123",
         tax=5.3,
     )

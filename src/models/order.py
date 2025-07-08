@@ -1,40 +1,63 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
+from enum import Enum
 from typing import Any, Dict
 from uuid import UUID
 
+from src.models.constants import TAX_RATE
 from src.models.product import Product
 from src.utils.format_datetime import format_datetime
 from src.utils.format_uuid import format_uuid
 
 
+class OrderStatus(Enum):
+    PENDING = 0
+    CONFIRMED = 1
+    CANCELLED = -1
+
+
+class DeliverStatus(Enum):
+    PREPARE = 1
+    READY = 2
+    DELIVERING = 3
+    DELIVERED = 4
+
+
 @dataclass
 class Order:
     order_id: UUID
-    order_date: datetime
-    shipping_date: datetime
-    shipping_status: str
+    confirmed_order: OrderStatus
+    desired_date: datetime
+    deliver_date: datetime
+    deliver_status: DeliverStatus
     payment_method: str
     member_id: UUID
     orders: Dict[str, int]  # Product: quantity
     order_fee: int
     total_fee: int
+    recipient: str
     address: str
-    tax: float
+    invoice: str
+    order_date: datetime = field(default_factory=datetime.now)
+    tax: float = TAX_RATE
 
     @classmethod
     def from_dict(cls, data: Dict) -> "Order":
         return cls(
             order_id=format_uuid(data["order_id"]),
-            order_date=format_datetime(data["order_date"]),
-            shipping_date=format_datetime(data["shipping_date"]),
-            shipping_status=data["shipping_status"],
+            order_date=format_datetime(data.get("order_date", datetime.now())),
+            confirmed_order=OrderStatus(data["confirmed_order"]),
+            desired_date=format_datetime(data["desired_date"]),
+            deliver_date=format_datetime(data["deliver_date"]),
+            deliver_status=DeliverStatus(data["deliver_status"]),
             payment_method=data["payment_method"],
             member_id=format_uuid(data["member_id"]),
-            orders=data["orders"],
+            orders=data["orders"],  # dict
             order_fee=data["order_fee"],
             total_fee=data["total_fee"],
+            recipient=data["recipient"],
             address=data["address"],
+            invoice=data["invoice"],
             tax=data["tax"],
         )
 
@@ -42,33 +65,43 @@ class Order:
         return {
             "order_id": self.order_id,
             "order_date": self.order_date,
-            "shipping_date": self.shipping_date,
-            "shipping_status": self.shipping_status,
+            "confirmed_order": self.confirmed_order.name,
+            "desired_date": self.desired_date,
+            "deliver_date": self.deliver_date,
+            "deliver_status": self.deliver_status.name,
             "payment_method": self.payment_method,
             "member_id": self.member_id,
             "orders": self.orders,
             "order_fee": self.order_fee,
             "total_fee": self.total_fee,
+            "recipient": self.recipient,
             "address": self.address,
+            "invoice": self.invoice,
             "tax": self.tax,
         }
 
-    def tax_fee_formula(self):
+    def tax_ratio(self):
+        """
+        Return the proportion of tax from a tax-included price
+        """
         return self.tax / (1 + self.tax)
 
     def calculate_tax_fee(self, product_map: Dict[str, Product], pid: str) -> float:
         product = product_map.get(pid)
-        tax_fee = product.price * self.tax_fee_formula()
+        tax_fee = product.price * self.tax_ratio()
         return tax_fee
 
-    def calculate_total_fee(self, product_map: Dict[str, Product]) -> int:
-        total = 0
+    def calculate_fee_detail(self, product_map: Dict[str, Product]) -> Dict[str, float]:
+        order_fee = 0
         for pid, qty in self.orders.items():
             product = product_map.get(pid)
             if not product:
                 raise ValueError(f"Product ID {pid} not found")
-            total += product.price * qty  # price * quantity
-        return total
+            order_fee += product.price * qty  # price * quantity
+
+        tax_fee = order_fee * self.tax_ratio()
+        total_fee = order_fee + tax_fee
+        return {"order_fee": order_fee, "tax_fee": tax_fee, "total_fee": total_fee}
 
     def get_order_items(
         self, product_map: Dict[str, Product]

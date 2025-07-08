@@ -3,9 +3,9 @@ import logging
 from linebot import LineBotApi
 from linebot.models import TextSendMessage
 
-from bot import constants
-from repos.member_repo import GoogleSheetMemberRepository
+from src.bot import constants
 from src.core.session.bind_session_store import BindSessionStore
+from src.repos.member_repo import GoogleSheetMemberRepository
 from src.services.member_service import MemberService
 
 repo = GoogleSheetMemberRepository()
@@ -16,7 +16,7 @@ member_service = MemberService(repo)
 def handle_waiting_name(line_id: str, name: str) -> TextSendMessage:
     session.set_field(line_id, "name", name)
     session.set_field(line_id, "step", "waiting_phone")
-    return TextSendMessage(text="請輸入您的手機號碼 📱")
+    return TextSendMessage(text="請輸入您的手機號碼")
 
 
 def handle_waiting_phone(line_id: str, phone: str) -> TextSendMessage:
