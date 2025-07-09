@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class MemberIn(BaseModel):
@@ -33,3 +33,10 @@ class MemberUpdate(BaseModel):
 class MemberResponse(BaseModel):
     status: str
     data: MemberOut
+
+
+class MemberBindRequest(BaseModel):
+    line_id: str = Field(..., description="使用者的 LINE ID")
+    name: str = Field(..., description="會員姓名")
+    phone: str = Field(..., description="手機號碼")
+    display_name: str | None = Field(None, description="LINE 顯示名稱（後端補上）")
