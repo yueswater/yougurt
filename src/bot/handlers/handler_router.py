@@ -29,8 +29,6 @@ def dispatch(user_id: str, text: str, line_bot_api: LineBotApi) -> TextSendMessa
         if text in INTERRUPTING_WORDS and text != constants.KEYWORDS.get("Order"):
             return TextSendMessage(text="請先完成下單再完成其他操作！")
         if order_handler.member_service.exists(user_id):
-            member = order_handler.member_service.get_by_line_id(user_id)
-            print(f"目前的會員：{member.to_dict()}")
             return order_handler.initiate_order(user_id)
         return TextSendMessage(text="請先完成會員綁定喔～")
 
