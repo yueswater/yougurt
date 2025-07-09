@@ -42,7 +42,7 @@ class GoogleSheetOrderRepository(OrderRepository):
             data["order_date"].isoformat(),
             data["confirmed_order"],  # OrderStatus name
             data["desired_date"].isoformat(),
-            data["deliver_date"].isoformat(),
+            data["deliver_date"],
             data["deliver_status"],  # DeliverStatus name
             data["payment_method"],
             str(data["member_id"]),
