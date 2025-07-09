@@ -6,9 +6,9 @@ from linebot.models import TextSendMessage
 
 from src.bot.utils.order_utils import parse_order_items
 from src.core.session.order_session_store import OrderSessionStore
-from src.models.product import Product
 from src.repos.member_repo import GoogleSheetMemberRepository
 from src.repos.order_repo import GoogleSheetOrderRepository
+from src.repos.product_repo import GoogleSheetProductRepository
 from src.services.member_service import MemberService
 from src.services.order_service import OrderService
 
@@ -20,10 +20,7 @@ member_service = MemberService(member_repo)
 order_repo = GoogleSheetOrderRepository()
 order_service = OrderService(order_repo)
 
-product_map = {
-    "milk": Product(product_id="milk", product_name="牛奶", price=100),
-    "honey": Product(product_id="honey", product_name="蜂蜜", price=200),
-}
+product_repo = GoogleSheetProductRepository()
 
 
 def handle_waiting_recipient(line_id: str, text: str) -> TextSendMessage:
@@ -65,12 +62,20 @@ def handle_waiting_confirm(
 
             desired_date = datetime.now()
 
+            name_to_pid, product_map = get_product_lookup()
+            converted_orders = {}
+            for name, qty in orders.items():
+                pid = name_to_pid.get(name)
+                if not pid:
+                    raise ValueError(f"找不到商品名稱：{name}")
+                converted_orders[pid] = qty
+
             # Create an order
             _ = order_service.create_order(
                 line_id=line_id,
                 recipient=recipient,
                 address=address,
-                orders=orders,
+                orders=converted_orders,
                 payment_method="LINE",
                 desired_date=desired_date,
                 product_map=product_map,
@@ -121,3 +126,10 @@ def initiate_order(line_id: str) -> TextSendMessage:
 
 def is_order_session_active(line_id: str) -> bool:
     return order_session.is_active(line_id)
+
+
+def get_product_lookup():
+    product_list = product_repo.get_all()
+    name_to_pid = {p.product_name: p.product_id for p in product_list}
+    product_map = {p.product_id: p for p in product_list}
+    return name_to_pid, product_map
