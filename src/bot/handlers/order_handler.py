@@ -58,7 +58,29 @@ def handle_waiting_orders(line_id: str, text: str) -> TextSendMessage:
 def handle_selected_date(line_id: str, date_str: str) -> TextSendMessage:
     order_session.set_field(line_id, "desired_date", date_str)
     order_session.set_field(line_id, "step", "waiting_confirm")
-    return TextSendMessage(text=f"你選擇的預計配送日為 {date_str}，請輸入「是」以確認訂單，或輸入「否」重新開始。")
+
+    session = order_session.get_session(line_id)
+    recipient = session.get("recipient", "")
+    address = session.get("address", "")
+    orders = session.get("orders", {})
+    desired_date = session.get("desired_date", "")
+
+    # 整理商品資訊
+    orders_summary = (
+        "\n".join([f"{name}：{qty}瓶" for name, qty in orders.items()]) if orders else "無"
+    )
+
+    # 組合總結文字
+    confirmation_text = (
+        f"以下是您即將送出的訂單資訊：\n\n"
+        f"收件人：{recipient}\n"
+        f"收件人地址：{address}\n"
+        f"商品：\n{orders_summary}\n"
+        f"期望配送日期：{desired_date}\n\n"
+        f"請輸入「是」以確認訂單，或輸入「否」重新開始。"
+    )
+
+    return TextSendMessage(text=confirmation_text)
 
 
 def handle_waiting_desired_date(line_id: str) -> TemplateSendMessage:
