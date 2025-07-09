@@ -80,7 +80,11 @@ class GoogleSheetMemberRepository(MemberRepository):
 
     def is_valid_member(self, line_id: str) -> bool:
         member = self.get_by_line_id(line_id)
-        return member.valid_member if member else False
+        return (
+            self.parse_bool(member.valid_member)
+            if member and hasattr(member, "valid_member")
+            else False
+        )
 
     def update(self, member: Member) -> None:
         all_rows = self.worksheet.get_all_records()
@@ -93,7 +97,7 @@ class GoogleSheetMemberRepository(MemberRepository):
         if target_row_idx is None:
             raise ValueError(f"找不到 line_id={member.line_id} 的會員")
 
-        target_row_idx + 2
+        row_number = target_row_idx + 2
 
         data = member.to_dict()
         new_row = [
@@ -110,12 +114,17 @@ class GoogleSheetMemberRepository(MemberRepository):
         ]
 
         # Overwrite data
-        self.worksheet.update(values=[new_row], range_name="A2:J2")
+        range_name = f"A{row_number}:J{row_number}"
+        self.worksheet.update(values=[new_row], range_name=range_name)
 
     def delete(self, line_id: str) -> None:
         member = self.get_by_line_id(line_id)
         if not member:
-            raise ValueError(f"找不到 line_id={member.line_id} 的會員")
+            raise ValueError(f"找不到 line_id={line_id} 的會員")
 
         member.valid_member = False
         self.update(member)
+
+    @staticmethod
+    def parse_bool(value: str) -> bool:
+        return str(value).strip().lower() == "true"
