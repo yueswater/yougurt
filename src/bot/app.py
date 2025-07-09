@@ -5,9 +5,14 @@ from dotenv import load_dotenv
 from flask import Flask, request
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
-from linebot.models import MessageEvent, TextMessage
+from linebot.models import MessageEvent, PostbackEvent, TextMessage
 
-from src.bot.handlers import handler_router
+from src.bot.handlers import handler_router, order_handler
+from src.core.session.order_session_store import OrderSessionStore
+
+# 初始化 session store（如已初始化可刪除）
+order_session = OrderSessionStore()
+
 
 load_dotenv()
 app = Flask(__name__)
@@ -50,6 +55,18 @@ def handle_message(event):
 
     reply = handler_router.dispatch(user_id, text, line_bot_api)
     line_bot_api.reply_message(event.reply_token, reply)
+
+
+@handler.add(PostbackEvent)
+def handle_postback(event):
+    data = event.postback.data
+    params = event.postback.params
+    line_id = event.source.user_id
+
+    if "action=select_date" in data:
+        selected_date = params.get("date")
+        reply = order_handler.handle_selected_date(line_id, selected_date)
+        line_bot_api.reply_message(event.reply_token, reply)
 
 
 if __name__ == "__main__":

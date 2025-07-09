@@ -67,7 +67,13 @@ class Order:
             "order_date": self.order_date,
             "confirmed_order": self.confirmed_order.name,
             "desired_date": self.desired_date,
-            "deliver_date": self.deliver_date,
+            "deliver_date": (
+                self.deliver_date.isoformat()
+                if isinstance(self.deliver_date, datetime)
+                else str(self.deliver_date)
+                if self.deliver_date
+                else ""
+            ),
             "deliver_status": self.deliver_status.name,
             "payment_method": self.payment_method,
             "member_id": self.member_id,

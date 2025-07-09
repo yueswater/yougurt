@@ -1,8 +1,13 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from linebot import LineBotApi
-from linebot.models import TextSendMessage
+from linebot.models import (
+    ButtonsTemplate,
+    DatetimePickerTemplateAction,
+    TemplateSendMessage,
+    TextSendMessage,
+)
 
 from src.bot.utils.order_utils import parse_order_items
 from src.core.session.order_session_store import OrderSessionStore
@@ -39,7 +44,7 @@ def handle_waiting_orders(line_id: str, text: str) -> TextSendMessage:
     try:
         order_items = parse_order_items(text)
         order_session.set_field(line_id, "orders", order_items)
-        order_session.set_field(line_id, "step", "waiting_confirm")
+        order_session.set_field(line_id, "step", "waiting_desired_date")
 
         summary = "\n".join([f"{k}：{v}瓶" for k, v in order_items.items()])
         return TextSendMessage(
@@ -48,6 +53,34 @@ def handle_waiting_orders(line_id: str, text: str) -> TextSendMessage:
     except Exception as e:
         logging.warning("商品解析錯誤：%s", str(e))
         return TextSendMessage(text="輸入格式錯誤，請重新輸入商品名稱與數量。格式例如：\n牛奶 1\n蜂蜜 2")
+
+
+def handle_selected_date(line_id: str, date_str: str) -> TextSendMessage:
+    order_session.set_field(line_id, "desired_date", date_str)
+    order_session.set_field(line_id, "step", "waiting_confirm")
+    return TextSendMessage(text=f"你選擇的預計配送日為 {date_str}，請輸入「是」以確認訂單，或輸入「否」重新開始。")
+
+
+def handle_waiting_desired_date(line_id: str) -> TemplateSendMessage:
+    order_session.set_field(line_id, "step", "waiting_confirm")
+
+    return TemplateSendMessage(
+        alt_text="請選擇預計配送日期",
+        template=ButtonsTemplate(
+            title="請選擇預計配送日期",
+            text="點選下方按鈕選擇日期",
+            actions=[
+                DatetimePickerTemplateAction(
+                    label="選擇日期",
+                    data=f"action=select_date&line_id={line_id}",
+                    mode="date",  # 也可以是 "time" 或 "datetime"
+                    initial=datetime.today().strftime("%Y-%m-%d"),
+                    min=datetime.today().strftime("%Y-%m-%d"),
+                    max=(datetime.today() + timedelta(days=14)).strftime("%Y-%m-%d"),
+                )
+            ],
+        ),
+    )
 
 
 def handle_waiting_confirm(
@@ -60,7 +93,8 @@ def handle_waiting_confirm(
             address = session.get("address")
             orders = session.get("orders")
 
-            desired_date = datetime.now()
+            desired_date = datetime.strptime(session.get("desired_date"), "%Y-%m-%d")
+            print(f"[DEBUG] desired_date: {desired_date}")
 
             name_to_pid, product_map = get_product_lookup()
             converted_orders = {}
@@ -92,7 +126,8 @@ def handle_waiting_confirm(
         order_session.start_session(line_id)
         return TextSendMessage(text="請重新輸入收件人姓名：")
     else:
-        return TextSendMessage(text="請輸入「是」或「否」來確認訂單。")
+        order_session.clear_session(line_id)
+        return TextSendMessage(text="輸入錯誤，請重新按下「優格訂購」")
 
 
 def handle_order_step(
@@ -106,6 +141,8 @@ def handle_order_step(
         return handle_waiting_address(line_id, text)
     elif step == "waiting_orders":
         return handle_waiting_orders(line_id, text)
+    elif step == "waiting_desired_date":
+        return handle_waiting_desired_date(line_id)
     elif step == "waiting_confirm":
         return handle_waiting_confirm(line_id, text, line_bot_api)
     else:
