@@ -50,7 +50,7 @@ def handle_waiting_orders(line_id: str, text: str) -> TextSendMessage:
         )
     except Exception as e:
         logging.warning("商品解析錯誤：%s", str(e))
-        return TextSendMessage(text="❗️輸入格式錯誤，請重新輸入商品名稱與數量。格式例如：\n牛奶 1\n蜂蜜 2")
+        return TextSendMessage(text="輸入格式錯誤，請重新輸入商品名稱與數量。格式例如：\n牛奶 1\n蜂蜜 2")
 
 
 def handle_waiting_confirm(
@@ -112,7 +112,7 @@ def initiate_order(line_id: str) -> TextSendMessage:
     if not member_service.exists(line_id):
         return TextSendMessage(text="您尚未綁定會員，請先綁定會員後再下單。")
 
-    if not member_service.is_valid_member(line_id):
+    if not member_service.check_valid_member(line_id):
         return TextSendMessage(text="您尚未完成付款，請先付款後等待審核完成。")
 
     order_session.start_session(line_id)
