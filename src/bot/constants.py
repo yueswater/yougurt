@@ -3,3 +3,12 @@ Message = {
     "OTHER_NEEDED": "請使用圖文選單開始操作，如有其他需求請點選『聯絡我們』",
     "BIND_SUCESS": "您好，{name}，已成功綁定會員！",
 }
+
+KEYWORDS = {
+    "Binding": "綁定會員",
+    "Order": "優格訂購",
+    "Purchase": "年購方案",
+    "Remain Order": "剩餘次數查詢",
+    "History": "訂購紀錄",
+    "Contact": "聯絡我們",
+}
