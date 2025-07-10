@@ -1,32 +1,32 @@
-<!-- src/web/templates/liff/bind.html -->
-<!DOCTYPE html>
-<html>
-<head>
-  <title>會員綁定</title>
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-</head>
-<body>
-  <h2>LINE 綁定會員</h2>
-  <input type="text" id="name" placeholder="請輸入姓名" />
-  <button onclick="bind()">立即綁定</button>
+{% extends "base.html" %}
 
-  <script>
-    async function bind() {
-      await liff.init({ liffId: "你的 LIFF ID" });
-      const profile = await liff.getProfile();
-      const lineId = profile.userId;
-      const name = document.getElementById("name").value;
+{% block title %}LINE 綁定會員{% endblock %}
 
-      const res = await fetch("/api/member/bind", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ line_id: lineId, name: name })
-      });
+{% block content %}
+<div class="max-w-xl mx-auto mt-16 p-8 bg-white shadow-lg rounded-xl">
+  <h1 class="text-3xl font-bold text-gray-800 mb-6">綁定會員資料</h1>
+  <form action="/bind" method="get" class="space-y-6">
 
-      const result = await res.json();
-      alert(result.message);
-      liff.closeWindow();  // 綁定完自動關閉 LIFF 視窗
-    }
-  </script>
-</body>
-</html>
+    <input type="hidden" name="line_id" value="{{ line_id }}">
+    <input type="hidden" name="name" value="{{ display_name }}">
+
+    <div>
+      <label class="block text-gray-700 font-semibold mb-2">LINE 暱稱</label>
+      <input type="text" value="{{ display_name }}" disabled
+        class="w-full border border-gray-300 rounded-md p-3 bg-gray-100 text-gray-600" />
+    </div>
+
+    <div>
+      <label for="phone" class="block text-gray-700 font-semibold mb-2">手機號碼</label>
+      <input type="tel" name="phone" id="phone" required pattern="^09\d{8}$"
+        placeholder="請輸入 09 開頭的手機號碼"
+        class="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-[#ACD042]" />
+    </div>
+
+    <button type="submit"
+      class="w-full bg-[#ACD042] text-white font-semibold py-3 rounded-md hover:bg-[#92B72B] transition duration-200">
+      完成綁定
+    </button>
+  </form>
+</div>
+{% endblock %}
