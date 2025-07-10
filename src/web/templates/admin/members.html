@@ -2,25 +2,35 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>會員列表</h2>
-<table>
-  <thead>
-    <tr>
-      <th>姓名</th>
-      <th>電話</th>
-      <th>建立時間</th>
-      <th>正式會員</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for m in members %}
-    <tr>
-      <td>{{ m.member_name }}</td>
-      <td>{{ m.phone }}</td>
-      <td>{{ m.create_at }}</td>
-      <td>{{ m.valid_member }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+<div class="p-6">
+  <h2 class="text-2xl font-bold mb-4">會員列表</h2>
+  <div class="overflow-x-auto rounded-lg shadow">
+    <table class="min-w-full divide-y divide-gray-200 bg-white">
+      <thead class="bg-gray-100">
+        <tr>
+          <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-700">姓名</th>
+          <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-700">電話</th>
+          <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-700">建立時間</th>
+          <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-700">正式會員</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        {% for m in members %}
+        <tr class="hover:bg-gray-50 transition duration-150">
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{{ m.member_name }}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{{ m.phone }}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ m.create_at }}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm">
+            {% if m.valid_member|string|lower == 'true' %}
+              <span class="inline-block px-2 py-1 text-green-800 bg-green-100 rounded-full text-xs">是</span>
+            {% else %}
+              <span class="inline-block px-2 py-1 text-red-800 bg-red-100 rounded-full text-xs">否</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
 {% endblock %}
