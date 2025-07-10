@@ -3,7 +3,15 @@
 
 {% block content %}
 <div class="p-6">
-  <h2 class="text-2xl font-bold mb-4">會員列表</h2>
+  <div class="flex items-center justify-between mb-4">
+    <h2 class="text-2xl font-bold">會員列表</h2>
+    <a href="{{ url_for('admin.new_member_form') }}"
+      class="px-4 py-2 bg-gray-700 text-white text-sm rounded hover:bg-gray-800 inline-flex items-center space-x-2">
+      <i class="fas fa-user-plus"></i>
+      <span>新增會員</span>
+    </a>
+  </div>
+
   <div class="overflow-x-auto rounded-lg shadow">
     <h3 id="refresh-indicator" class="text-xs text-gray-400 mb-2">最後更新：尚未載入</h3>
 

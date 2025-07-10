@@ -1,5 +1,9 @@
-from flask import Blueprint, render_template, request
+from datetime import datetime
+from uuid import uuid4
 
+from flask import Blueprint, redirect, render_template, request, url_for
+
+from src.models.member import Member
 from src.repos.member_repo import GoogleSheetMemberRepository
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
@@ -30,3 +34,33 @@ def members_partial():
     members = repo.get_all()
     print("🔥 refreshing partial")
     return render_template("admin/_member_table.html", members=members)
+
+
+@admin_bp.route("/members/new", methods=["GET"])
+def new_member_form():
+    return render_template("admin/add_member.html")
+
+
+@admin_bp.route("/members/create", methods=["POST"])
+def create_member():
+    form = request.form
+
+    payment_method = form.get("payment_method")  # 現金 or 轉帳
+    bank_account = form.get("bank_account") if payment_method == "transfer" else None
+
+    member = Member(
+        member_id=uuid4(),
+        line_id=form.get("line_id") or None,
+        member_name=form.get("member_name"),
+        phone=form.get("phone"),
+        create_at=datetime.now(),
+        order_type=form.get("order_type") or "",
+        remain_delivery=int(form.get("remain_delivery") or 0),
+        remain_volume=int(form.get("remain_volume") or 0),
+        prepaid=int(form.get("prepaid") or 0),
+        valid_member=form.get("valid_member") == "true",
+        bank_account=bank_account,
+    )
+    repo = GoogleSheetMemberRepository()
+    repo.add(member)
+    return redirect(url_for("admin.show_members"))
