@@ -40,19 +40,32 @@ def handle_waiting_address(line_id: str, text: str) -> TextSendMessage:
     return TextSendMessage(text="請輸入商品名稱與數量（例如：\n牛奶 1\n蜂蜜 2）：")
 
 
-def handle_waiting_orders(line_id: str, text: str) -> TextSendMessage:
+# def handle_waiting_orders(line_id: str, text: str) -> TextSendMessage:
+#     try:
+#         order_items = parse_order_items(text)
+#         order_session.set_field(line_id, "orders", order_items)
+#         order_session.set_field(line_id, "step", "waiting_desired_date")
+
+#         summary = "\n".join([f"{k}：{v}瓶" for k, v in order_items.items()])
+#         return TextSendMessage(
+#             text=f"接下來請選擇期望配送日期。"
+#         )
+#     except Exception as e:
+#         logging.warning("商品解析錯誤：%s", str(e))
+#         return TextSendMessage(text="輸入格式錯誤，請重新輸入商品名稱與數量。格式例如：\n牛奶 1\n蜂蜜 2")
+
+
+def handle_waiting_orders(line_id: str, text: str) -> TemplateSendMessage:
     try:
         order_items = parse_order_items(text)
         order_session.set_field(line_id, "orders", order_items)
         order_session.set_field(line_id, "step", "waiting_desired_date")
 
-        summary = "\n".join([f"{k}：{v}瓶" for k, v in order_items.items()])
-        return TextSendMessage(
-            text=f"以下是您輸入的訂單資訊：\n{summary}\n\n請輸入「是」以確認訂單，或輸入「否」重新開始。"
-        )
+        return handle_waiting_desired_date(line_id)  # ✅ 直接 return 日期選擇器
+
     except Exception as e:
         logging.warning("商品解析錯誤：%s", str(e))
-        return TextSendMessage(text="輸入格式錯誤，請重新輸入商品名稱與數量。格式例如：\n牛奶 1\n蜂蜜 2")
+        return TextSendMessage(text="格式錯誤，請重新輸入。")
 
 
 def handle_selected_date(line_id: str, date_str: str) -> TextSendMessage:
@@ -108,6 +121,7 @@ def handle_waiting_desired_date(line_id: str) -> TemplateSendMessage:
 def handle_waiting_confirm(
     line_id: str, answer: str, line_bot_api: LineBotApi
 ) -> TextSendMessage:
+    order_session.set_field(line_id, "step", "waiting_confirm")
     if answer == "是":
         try:
             session = order_session.get_session(line_id)
@@ -116,7 +130,6 @@ def handle_waiting_confirm(
             orders = session.get("orders")
 
             desired_date = datetime.strptime(session.get("desired_date"), "%Y-%m-%d")
-            print(f"[DEBUG] desired_date: {desired_date}")
 
             name_to_pid, product_map = get_product_lookup()
             converted_orders = {}
