@@ -10,8 +10,12 @@
     <div class="flex items-center justify-between">
       <span class="text-sm font-medium text-gray-700">是否確認訂單</span>
       <label class="inline-flex relative items-center cursor-pointer">
-        <input type="checkbox" name="confirmed_order" value="true" {% if order.confirmed_order == 'CONFIRMED' %}checked{% endif %} class="sr-only peer">
-        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:bg-green-500 transition-all duration-300"></div>
+        <input type="hidden" name="confirmed_order" value="false">
+        <input type="checkbox" name="confirmed_order" value="CONFIRMED" {% if order.confirmed_order=='CONFIRMED'
+          %}checked{% endif %} class="sr-only peer">
+        <div
+          class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:bg-green-500 transition-all duration-300">
+        </div>
         <div
           class="absolute left-1 top-1 w-4 h-4 bg-white border border-gray-300 rounded-full transition-transform duration-300 peer-checked:translate-x-full">
         </div>
@@ -21,7 +25,8 @@
     <!-- Deliver Date -->
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-1">出貨日期</label>
-      <input type="date" name="deliver_date" value="{{ order.deliver_date.strftime('%Y-%m-%d') if order.deliver_date else '' }}" required
+      <input type="date" name="deliver_date"
+        value="{{ order.deliver_date.strftime('%Y-%m-%d') if order.deliver_date else '' }}" required
         class="w-full px-3 py-2 border border-gray-300 rounded">
     </div>
 
@@ -29,9 +34,9 @@
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-1">出貨狀態</label>
       <select name="deliver_status" class="w-full px-3 py-2 border border-gray-300 rounded">
-        <option value="PREPARE" {% if order.deliver_status == 'PREPARE' %}selected{% endif %}>備貨中</option>
-        <option value="DELIVERING" {% if order.deliver_status == 'DELIVERING' %}selected{% endif %}>配送中</option>
-        <option value="DELIVERED" {% if order.deliver_status == 'DELIVERED' %}selected{% endif %}>已送達</option>
+        <option value="PREPARE" {% if order.deliver_status=='PREPARE' %}selected{% endif %}>備貨中</option>
+        <option value="DELIVERING" {% if order.deliver_status=='DELIVERING' %}selected{% endif %}>配送中</option>
+        <option value="DELIVERED" {% if order.deliver_status=='DELIVERED' %}selected{% endif %}>已送達</option>
       </select>
     </div>
 
@@ -49,6 +54,30 @@
         <span>返回列表</span>
       </a>
     </div>
+    <div class="mt-6 p-4 border border-gray-300 rounded bg-gray-50 text-sm text-gray-700">
+      <p><strong>目前是否確認訂單：</strong> <span id="debug-confirmed">（尚未選擇）</span></p>
+      <p><strong>目前出貨日期：</strong> <span id="debug-date">（尚未選擇）</span></p>
+      <p><strong>目前出貨狀態：</strong> <span id="debug-status">（尚未選擇）</span></p>
+    </div>
+    <script>
+      const confirmedInput = document.querySelector('input[name="confirmed_order"][value="CONFIRMED"]');
+      const deliverDateInput = document.querySelector('input[name="deliver_date"]');
+      const deliverStatusSelect = document.querySelector('select[name="deliver_status"]');
+
+      function updateDebug() {
+        document.getElementById("debug-confirmed").innerText = confirmedInput.checked ? "CONFIRMED" : "PENDING";
+        document.getElementById("debug-date").innerText = deliverDateInput.value || "（尚未選擇）";
+        document.getElementById("debug-status").innerText = deliverStatusSelect.value || "（尚未選擇）";
+      }
+
+      // 綁定事件
+      confirmedInput.addEventListener("change", updateDebug);
+      deliverDateInput.addEventListener("input", updateDebug);
+      deliverStatusSelect.addEventListener("change", updateDebug);
+
+      // 初始顯示
+      updateDebug();
+    </script>
 
   </form>
 </div>

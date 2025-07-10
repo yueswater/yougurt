@@ -126,6 +126,26 @@ class Order:
             }
         return items
 
+    @property
+    def confirmed_order_text(self) -> str:
+        if self.confirmed_order == OrderStatus.CONFIRMED:
+            return "已確認"
+        elif self.confirmed_order == OrderStatus.PENDING:
+            return "待確認"
+        elif self.confirmed_order == OrderStatus.CANCELLED:
+            return "已取消"
+        return "未指定"
+
+    @property
+    def deliver_status_text(self) -> str:
+        if self.deliver_status == DeliverStatus.PREPARE:
+            return "備貨中"
+        elif self.deliver_status == DeliverStatus.DELIVERING:
+            return "配送中"
+        elif self.deliver_status == DeliverStatus.DELIVERED:
+            return "已送達"
+        return "未指定"
+
     def __post_init__(self):
         if self.order_fee < 0 or self.total_fee < 0 or self.tax < 0:
             raise ValueError("order_fee, total_fee, and tax cannot be negative")

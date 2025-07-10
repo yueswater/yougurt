@@ -85,19 +85,19 @@ def show_orders():
     member_map = {str(m.member_id): m.member_name for m in members}
 
     for o in orders:
-        # 狀態中文
-        o.confirmed_order_text = ORDER_STATUS_TEXT.get(
-            o.confirmed_order.name
-            if hasattr(o.confirmed_order, "name")
-            else str(o.confirmed_order),
-            str(o.confirmed_order),
-        )
-        o.deliver_status_text = DELIVER_STATUS_TEXT.get(
-            o.deliver_status.name
-            if hasattr(o.deliver_status, "name")
-            else str(o.deliver_status),
-            str(o.deliver_status),
-        )
+        # # 狀態中文
+        # o.confirmed_order_text = ORDER_STATUS_TEXT.get(
+        #     o.confirmed_order.name
+        #     if hasattr(o.confirmed_order, "name")
+        #     else str(o.confirmed_order),
+        #     str(o.confirmed_order),
+        # )
+        # o.deliver_status_text = DELIVER_STATUS_TEXT.get(
+        #     o.deliver_status.name
+        #     if hasattr(o.deliver_status, "name")
+        #     else str(o.deliver_status),
+        #     str(o.deliver_status),
+        # )
 
         # 加上會員姓名
         o.member_name = member_map.get(str(o.member_id), "未知會員")
@@ -122,12 +122,19 @@ def update_order(order_id):
         return "找不到訂單", 404
 
     form = request.form
-    confirmed_str = form.get("confirmed_order")
-    deliver_str = form.get("deliver_status")
 
-    order.confirmed_order = OrderStatus[confirmed_str] if confirmed_str else None
+    # ✅ 修正 checkbox 傳送邏輯
+    confirmed_list = form.getlist("confirmed_order")
+    confirmed_str = "CONFIRMED" if "CONFIRMED" in confirmed_list else "false"
+    order.confirmed_order = (
+        OrderStatus.CONFIRMED if confirmed_str == "CONFIRMED" else OrderStatus.PENDING
+    )
+
+    # 出貨狀態與日期
+    deliver_str = form.get("deliver_status")
+    deliver_date_str = form.get("deliver_date")
     order.deliver_status = DeliverStatus[deliver_str] if deliver_str else None
-    order.deliver_date = form.get("deliver_date")
+    order.deliver_date = deliver_date_str or None
 
     repo.update(order)
-    return redirect(url_for("admin.show_members"))
+    return redirect(url_for("admin.show_orders"))

@@ -109,6 +109,17 @@ class GoogleSheetOrderRepository(OrderRepository):
         for idx, row in enumerate(all_rows, start=2):
             if row["Order ID"] == str(updated_order.order_id):
                 data = updated_order.to_dict()
+                data["confirmed_order"] = (
+                    data["confirmed_order"].name
+                    if hasattr(data["confirmed_order"], "name")
+                    else data["confirmed_order"]
+                )
+                data["deliver_status"] = (
+                    data["deliver_status"].name
+                    if hasattr(data["deliver_status"], "name")
+                    else data["deliver_status"]
+                )
+                print("[DEBUG] 更新欄位：", data)
                 orders_display = "、".join(
                     f"{pid} * {qty}" for pid, qty in data["orders"].items()
                 )
