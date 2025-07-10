@@ -2,7 +2,12 @@ from linebot import LineBotApi
 from linebot.models import Message, TextSendMessage
 
 from src.bot import constants
-from src.bot.handlers import order_handler, purchase_handler, user_handler
+from src.bot.handlers import (
+    contact_handler,
+    order_handler,
+    purchase_handler,
+    user_handler,
+)
 
 INTERRUPTING_WORDS = list(constants.KEYWORDS.values())
 
@@ -66,6 +71,10 @@ def dispatch(
         prepaid = member.prepaid
 
         return TextSendMessage(text=f"您目前的剩餘配送次數為：{remain} 次\n訂購額度為：${prepaid}")
+
+    # 聯絡我們流程
+    elif text == constants.KEYWORDS.get("Contact", ""):
+        return contact_handler.handle_contact_us()
 
     # 預設回覆
     else:
