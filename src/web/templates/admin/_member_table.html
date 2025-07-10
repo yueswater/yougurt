@@ -1,0 +1,33 @@
+{% for m in members %}
+<tr class="hover:bg-gray-50 transition duration-150">
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{{ m.member_name }}</td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{{ m.phone }}</td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ m.create_at|format_date_only }}</td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm">
+        {% if m.valid_member|string|lower == 'true' %}
+        <span class="inline-block px-2 py-1 text-green-800 bg-green-100 rounded-full text-xs">是</span>
+        {% else %}
+        <span class="inline-block px-2 py-1 text-red-800 bg-red-100 rounded-full text-xs">否</span>
+        {% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+        {% if m.bank_account %}
+        {{ m.bank_account|string }}
+        {% else %}
+        <span class="text-gray-400">尚未付款</span>
+        {% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm">
+        {% if m.valid_member|string|lower != 'true' %}
+        <form hx-post="/admin/members/confirm" hx-target="body" hx-swap="outerHTML">
+            <input type="hidden" name="line_id" value="{{ m.line_id }}">
+            <button type="submit" class="bg-gray-200 text-gray-800 text-xs px-3 py-1 rounded hover:bg-gray-300 transition duration-150 border border-gray-300 shadow-sm">
+                確認付款
+            </button>
+        </form>
+        {% else %}
+        <span class="text-gray-400 text-xs">已付款</span>
+        {% endif %}
+    </td>
+</tr>
+{% endfor %}
