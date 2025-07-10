@@ -19,7 +19,7 @@ def handle_order_history(line_id: str):
     orders = order_repo.get_by_member_id(member.member_id)
 
     # 過濾掉 Deliver Date 為空的訂單
-    filtered_orders = [o for o in orders if o.deliver_date.strip()]
+    filtered_orders = [o for o in orders if o.deliver_date.strftime("%Y-%m-%d").strip()]
 
     if not filtered_orders:
         return TextSendMessage(text="目前尚無完成配送的訂單紀錄喔～")
