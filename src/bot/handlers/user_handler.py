@@ -4,6 +4,7 @@ from linebot import LineBotApi
 from linebot.models import MessageAction, QuickReply, QuickReplyButton, TextSendMessage
 
 from src.bot import constants
+from src.bot.utils.member_utils import validate_phone_format
 from src.core.session.bind_session_store import BindSessionStore
 from src.repos.member_repo import GoogleSheetMemberRepository
 from src.services.member_service import MemberService
@@ -16,9 +17,10 @@ member_service = MemberService(repo)
 def handle_waiting_name(line_id: str, name: str) -> TextSendMessage:
     session.set_field(line_id, "name", name)
     session.set_field(line_id, "step", "waiting_phone")
-    return TextSendMessage(text="請輸入您的手機號碼")
+    return TextSendMessage(text="請輸入您的手機號碼\n例如：0912345678 或 0912-345678")
 
 
+@validate_phone_format
 def handle_waiting_phone(line_id: str, phone: str) -> TextSendMessage:
     session.set_field(line_id, "phone", phone)
     session.set_field(line_id, "step", "waiting_confirm")
@@ -86,7 +88,7 @@ def handle_binding_step(
 
 def initiate_binding(line_id: str) -> TextSendMessage:
     session.start_session(line_id)
-    return TextSendMessage(text="請輸入您的本名 👤")
+    return TextSendMessage(text="請輸入您的本名")
 
 
 def is_binding_session_active(line_id: str) -> bool:
