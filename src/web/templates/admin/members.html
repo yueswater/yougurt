@@ -12,6 +12,7 @@
           <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-700">電話</th>
           <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-700">建立時間</th>
           <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-700">正式會員</th>
+          <th scope="col" class="px-6 py-3 text-left text-sm font-medium text-gray-700">帳號末五碼</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-200">
@@ -19,12 +20,19 @@
         <tr class="hover:bg-gray-50 transition duration-150">
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{{ m.member_name }}</td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{{ m.phone }}</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ m.create_at }}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ m.create_at|format_date_only }}</td>
           <td class="px-6 py-4 whitespace-nowrap text-sm">
             {% if m.valid_member|string|lower == 'true' %}
               <span class="inline-block px-2 py-1 text-green-800 bg-green-100 rounded-full text-xs">是</span>
             {% else %}
               <span class="inline-block px-2 py-1 text-red-800 bg-red-100 rounded-full text-xs">否</span>
+            {% endif %}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+            {% if m.bank_account %}
+              {{ m.bank_account[-5:] }}
+            {% else %}
+              <span class="text-gray-400 italic">尚未付款</span>
             {% endif %}
           </td>
         </tr>

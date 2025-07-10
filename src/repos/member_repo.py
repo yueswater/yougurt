@@ -3,6 +3,8 @@ from typing import List, Optional, Union
 from uuid import UUID
 
 from src.models.member import Member
+from src.utils.format_datetime import format_date_only
+from src.utils.format_phone import format_phone
 from src.utils.sheet_client import get_worksheet
 
 
@@ -55,12 +57,13 @@ class GoogleSheetMemberRepository(MemberRepository):
         members = []
 
         for row in rows:
+            print(row["Create at"])
             data = {
                 "member_id": row["Member ID"],
                 "line_id": row["Line ID"],
                 "member_name": row["Member Name"],
-                "create_at": row["Create at"],
-                "phone": row["Phone"],
+                "create_at": format_date_only(row["Create at"]),
+                "phone": format_phone(row["Phone"]),
                 "order_type": row["Order Type"],
                 "remain_delivery": row["Remain Delivery"],
                 "remain_volume": row["Remain Volume"],
@@ -117,7 +120,7 @@ class GoogleSheetMemberRepository(MemberRepository):
         ]
 
         # Overwrite data
-        range_name = f"A{row_number}:J{row_number}"  # noqa: E231
+        range_name = f"A{row_number}:K{row_number}"  # noqa: E231
         self.worksheet.update(values=[new_row], range_name=range_name)
 
     def delete(self, line_id: str) -> None:
