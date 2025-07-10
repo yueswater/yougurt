@@ -1,0 +1,26 @@
+{# src/web/templates/admin/members.html #}
+{% extends "base.html" %}
+
+{% block content %}
+<h2>會員列表</h2>
+<table>
+  <thead>
+    <tr>
+      <th>姓名</th>
+      <th>電話</th>
+      <th>建立時間</th>
+      <th>正式會員</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for m in members %}
+    <tr>
+      <td>{{ m.member_name }}</td>
+      <td>{{ m.phone }}</td>
+      <td>{{ m.create_at }}</td>
+      <td>{{ m.valid_member }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
