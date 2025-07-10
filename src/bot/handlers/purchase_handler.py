@@ -24,6 +24,9 @@ member_service = MemberService(repo)
 
 
 def handle_annual_purchase_start(line_id: str):
+    if not member_service.exists(line_id):
+        return TextSendMessage(text="⚠️ 您尚未綁定會員，請先完成會員綁定後再使用年購方案功能。")
+
     purchase_session.start_session(line_id)
     purchase_session.set_field(line_id, "step", "waiting_bank_account")
 
