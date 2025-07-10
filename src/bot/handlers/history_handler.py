@@ -4,32 +4,31 @@ from src.repos.member_repo import GoogleSheetMemberRepository
 from src.repos.order_repo import GoogleSheetOrderRepository
 from src.services.member_service import MemberService
 
-# 初始化服務
-member_service = MemberService(GoogleSheetMemberRepository())
+# 初始化 repo 與 service
 order_repo = GoogleSheetOrderRepository()
+member_repo = GoogleSheetMemberRepository()
+member_service = MemberService(member_repo)
 
 
-def handle_order_history(line_id: str) -> TextSendMessage:
-    # 1. 檢查是否為有效會員
+def handle_order_history(line_id: str):
+    # 檢查是否為已綁定會員
     if not member_service.exists(line_id):
-        return TextSendMessage(text="❗ 請先完成會員綁定，才能查詢訂購紀錄喔～")
+        return TextSendMessage(text="請先完成會員綁定才能查詢訂購紀錄喔～")
 
-    # 2. 取得會員資料（member_id）
     member = member_service.get_by_line_id(line_id)
-    member_id = member.member_id
+    orders = order_repo.get_by_member_id(member.member_id)
 
-    # 3. 查詢訂購紀錄
-    orders = order_repo.get_by_member_id(member_id)
+    # 過濾掉 Deliver Date 為空的訂單
+    filtered_orders = [o for o in orders if o.deliver_date.strip()]
 
-    if not orders:
-        return TextSendMessage(text="目前尚無任何訂購紀錄喔～")
+    if not filtered_orders:
+        return TextSendMessage(text="目前尚無完成配送的訂單紀錄喔～")
 
-    # 4. 整理訂單資料
-    lines = ["您的訂購紀錄如下：\n"]
-    for order in orders[-5:]:  # 僅顯示最近 5 筆
-        order_summary = "、".join(
-            [f"{name} * {qty}" for name, qty in order.orders.items()]
-        )
-        lines.append(f"🗓 {order.order_date.strftime('%Y-%m-%d')}\n商品：{order_summary}\n")
+    # 組成每筆訂單的顯示文字
+    order_texts = [
+        f"📦 配送日期：{o.deliver_date}\n內容：{', '.join([f'{k} {v}瓶' for k, v in o.orders.items()])}"
+        for o in filtered_orders
+    ]
 
-    return TextSendMessage(text="\n".join(lines))
+    # 將多筆紀錄合併為單一訊息傳送
+    return TextSendMessage(text="\n\n".join(order_texts))
