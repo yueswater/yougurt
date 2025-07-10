@@ -10,20 +10,20 @@ from src.repos.member_repo import GoogleSheetMemberRepository
 from src.services.member_service import MemberService
 
 repo = GoogleSheetMemberRepository()
-session = BindSessionStore()
+binding_session = BindSessionStore()
 member_service = MemberService(repo)
 
 
 def handle_waiting_name(line_id: str, name: str) -> TextSendMessage:
-    session.set_field(line_id, "name", name)
-    session.set_field(line_id, "step", "waiting_phone")
+    binding_session.set_field(line_id, "name", name)
+    binding_session.set_field(line_id, "step", "waiting_phone")
     return TextSendMessage(text="請輸入您的手機號碼\n例如：0912345678 或 0912-345678")
 
 
 @validate_phone_format
 def handle_waiting_phone(line_id: str, phone: str) -> TextSendMessage:
-    session.set_field(line_id, "phone", phone)
-    session.set_field(line_id, "step", "waiting_confirm")
+    binding_session.set_field(line_id, "phone", phone)
+    binding_session.set_field(line_id, "step", "waiting_confirm")
     return TextSendMessage(
         text="請輸入「是」以完成綁定，或輸入「否」重新輸入。",
         quick_reply=QuickReply(
@@ -38,7 +38,7 @@ def handle_waiting_phone(line_id: str, phone: str) -> TextSendMessage:
 def handle_waiting_confirm(
     line_id: str, answer: str, line_bot_api: LineBotApi
 ) -> TextSendMessage:
-    state = session.get_session(line_id)
+    state = binding_session.get_session(line_id)
 
     if answer == "是":
         name = state.get("name")
@@ -55,8 +55,8 @@ def handle_waiting_confirm(
             # Add member data
             _ = member_service.create_member(line_id, name, phone, display_name)
 
-            # Clear session storage
-            session.clear_session(line_id)
+            # Clear binding_session storage
+            binding_session.clear_session(line_id)
             logging.info("使用者 LINE 顯示名稱為：%s", display_name)
             return TextSendMessage(
                 text=constants.Message.get("BIND_SUCESS", "").format(name=name)
@@ -65,7 +65,7 @@ def handle_waiting_confirm(
             logging.exception("會員建立失敗")
             return TextSendMessage(text="資料儲存失敗，請稍後再試")
     elif answer == "否":
-        session.start_session(line_id)
+        binding_session.start_session(line_id)
         return TextSendMessage(text="請重新輸入您的本名")
     else:
         return TextSendMessage(text="請輸入「是」或「否」來確認資訊是否正確")
@@ -74,7 +74,7 @@ def handle_waiting_confirm(
 def handle_binding_step(
     line_id: str, text: str, line_bot_api: LineBotApi
 ) -> TextSendMessage:
-    step = session.get_session(line_id).get("step")
+    step = binding_session.get_session(line_id).get("step")
     if step == "waiting_name":
         return handle_waiting_name(line_id, text)
     elif step == "waiting_phone":
@@ -82,14 +82,14 @@ def handle_binding_step(
     elif step == "waiting_confirm":
         return handle_waiting_confirm(line_id, text, line_bot_api)
     else:
-        session.clear_session(line_id)
+        binding_session.clear_session(line_id)
         return TextSendMessage(text="綁定流程異常，請輸入「綁定會員」重新開始")
 
 
 def initiate_binding(line_id: str) -> TextSendMessage:
-    session.start_session(line_id)
+    binding_session.start_session(line_id)
     return TextSendMessage(text="請輸入您的本名")
 
 
 def is_binding_session_active(line_id: str) -> bool:
-    return session.is_active(line_id)
+    return binding_session.is_active(line_id)
