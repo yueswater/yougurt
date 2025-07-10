@@ -3,12 +3,16 @@ from datetime import datetime, timedelta
 
 from linebot import LineBotApi
 from linebot.models import (
+    BoxComponent,
+    BubbleContainer,
+    ButtonComponent,
     ButtonsTemplate,
     DatetimePickerTemplateAction,
+    FlexSendMessage,
     MessageAction,
-    QuickReply,
-    QuickReplyButton,
+    SeparatorComponent,
     TemplateSendMessage,
+    TextComponent,
     TextSendMessage,
 )
 
@@ -34,7 +38,7 @@ product_repo = GoogleSheetProductRepository()
 def handle_waiting_recipient(line_id: str, text: str) -> TextSendMessage:
     order_session.set_field(line_id, "recipient", text)
     order_session.set_field(line_id, "step", "waiting_address")
-    return TextSendMessage(text="請輸入收件人地址：")
+    return TextSendMessage(text="請輸入收件人地址")
 
 
 def handle_waiting_address(line_id: str, text: str) -> TextSendMessage:
@@ -56,7 +60,7 @@ def handle_waiting_orders(line_id: str, text: str) -> TemplateSendMessage:
         return TextSendMessage(text="格式錯誤，請重新輸入。")
 
 
-def handle_selected_date(line_id: str, date_str: str) -> TextSendMessage:
+def handle_selected_date(line_id: str, date_str: str) -> FlexSendMessage:
     order_session.set_field(line_id, "desired_date", date_str)
     order_session.set_field(line_id, "step", "waiting_confirm")
 
@@ -67,25 +71,45 @@ def handle_selected_date(line_id: str, date_str: str) -> TextSendMessage:
     desired_date = session.get("desired_date", "")
 
     orders_summary = (
-        "\n".join([f"{name}：{qty}瓶" for name, qty in orders.items()]) if orders else "無"
+        "\n".join([f"∙ {name}：{qty}瓶" for name, qty in orders.items()])
+        if orders
+        else "無"
     )
 
-    confirmation_text = (
-        f"以下是您即將送出的訂單資訊：\n\n"
-        f"收件人：{recipient}\n"
-        f"收件人地址：{address}\n"
-        f"商品：\n{orders_summary}\n"
-        f"期望配送日期：{desired_date}\n\n"
-        f"請點選下方選項以確認訂單："
-    )
-
-    return TextSendMessage(
-        text=confirmation_text,
-        quick_reply=QuickReply(
-            items=[
-                QuickReplyButton(action=MessageAction(label="是", text="是")),
-                QuickReplyButton(action=MessageAction(label="否", text="否")),
-            ]
+    return FlexSendMessage(
+        alt_text="請確認訂單資訊",
+        contents=BubbleContainer(
+            body=BoxComponent(
+                layout="vertical",
+                contents=[
+                    TextComponent(text="訂單確認", weight="bold", size="lg"),
+                    SeparatorComponent(margin="md"),
+                    TextComponent(text=f"收件人：{recipient}", wrap=True),
+                    TextComponent(text=f"地址：{address}", wrap=True),
+                    TextComponent(text=f"商品：\n{orders_summary}", wrap=True),
+                    TextComponent(text=f"配送日期：{desired_date}", wrap=True),
+                    SeparatorComponent(margin="md"),
+                    TextComponent(
+                        text="請點選下方按鈕確認是否送出：", size="sm", color="#888888", margin="md"
+                    ),
+                ],
+            ),
+            footer=BoxComponent(
+                layout="horizontal",
+                spacing="md",
+                contents=[
+                    ButtonComponent(
+                        style="primary",
+                        color="#00C851",  # 綠色
+                        action=MessageAction(label="是", text="是"),
+                    ),
+                    ButtonComponent(
+                        style="secondary",
+                        color="#ff4444",  # 紅色
+                        action=MessageAction(label="否", text="否"),
+                    ),
+                ],
+            ),
         ),
     )
 
@@ -153,7 +177,7 @@ def handle_waiting_confirm(
 
     elif answer == "否":
         order_session.start_session(line_id)
-        return TextSendMessage(text="請重新輸入收件人姓名：")
+        return TextSendMessage(text="請重新輸入收件人姓名")
     else:
         order_session.clear_session(line_id)
         return TextSendMessage(text="輸入錯誤，請重新按下「優格訂購」")
@@ -187,7 +211,7 @@ def initiate_order(line_id: str) -> TextSendMessage:
         return TextSendMessage(text="您尚未完成付款，請先付款後等待審核完成。")
 
     order_session.start_session(line_id)
-    return TextSendMessage(text="請輸入收件人姓名：")
+    return TextSendMessage(text="請輸入收件人姓名")
 
 
 def is_order_session_active(line_id: str) -> bool:
