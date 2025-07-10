@@ -12,6 +12,10 @@ class OrderRepository(ABC):
         pass
 
     @abstractmethod
+    def update(self, order: Order) -> None:
+        pass
+
+    @abstractmethod
     def get_all(self) -> List[Order]:
         pass
 
@@ -99,3 +103,32 @@ class GoogleSheetOrderRepository(OrderRepository):
 
         orders = [o for o in all_orders if o.member_id == member_id]
         return orders
+
+    def update(self, updated_order: Order) -> None:
+        all_rows = self.worksheet.get_all_records()
+        for idx, row in enumerate(all_rows, start=2):
+            if row["Order ID"] == str(updated_order.order_id):
+                data = updated_order.to_dict()
+                orders_display = "、".join(
+                    f"{pid} * {qty}" for pid, qty in data["orders"].items()
+                )
+                update_row = [
+                    str(data["order_id"]),
+                    data["order_date"].isoformat(),
+                    data["confirmed_order"],
+                    data["desired_date"].isoformat(),
+                    data["deliver_date"],
+                    data["deliver_status"],
+                    data["payment_method"],
+                    str(data["member_id"]),
+                    orders_display,
+                    str(data["order_fee"]),
+                    str(data["total_fee"]),
+                    data["recipient"],
+                    data["address"],
+                    data["invoice"],
+                    str(data["tax"]),
+                ]
+                self.worksheet.update(f"A{idx}:O{idx}", [update_row])  # noqa: E231
+                return
+        raise ValueError("Order not found")

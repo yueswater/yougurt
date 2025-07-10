@@ -23,7 +23,7 @@ class MemberService:
             "create_at": datetime.now().isoformat(),
             "phone": phone,
             "order_type": "",
-            "remain_delivery": 0,
+            "remain_delivery": BASIC_DELIVERY,
             "remain_volume": 0,
             "prepaid": basic_fee,
             "display_name": display_name,

@@ -4,10 +4,16 @@ from uuid import uuid4
 from flask import Blueprint, redirect, render_template, request, url_for
 
 from src.models.member import Member
+from src.models.order import DeliverStatus, OrderStatus
 from src.repos.member_repo import GoogleSheetMemberRepository
 from src.repos.order_repo import GoogleSheetOrderRepository
+from src.web.utils.cache import get_cached_members
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
+
+ORDER_STATUS_TEXT = {"PENDING": "待確認", "CONFIRMED": "已確認", "CANCELLED": "已取消"}
+
+DELIVER_STATUS_TEXT = {"PREPARE": "準備中", "DELIVERING": "配送中", "DELIVERED": "已送達"}
 
 
 @admin_bp.route("/members", methods=["GET"])
@@ -69,8 +75,33 @@ def create_member():
 
 @admin_bp.route("/orders", methods=["GET"])
 def show_orders():
-    repo = GoogleSheetOrderRepository()
-    orders = repo.get_all()
+    order_repo = GoogleSheetOrderRepository()
+    GoogleSheetMemberRepository()
+
+    orders = order_repo.get_all()
+    members = get_cached_members()
+
+    # 用 dict 快速查會員名稱
+    member_map = {str(m.member_id): m.member_name for m in members}
+
+    for o in orders:
+        # 狀態中文
+        o.confirmed_order_text = ORDER_STATUS_TEXT.get(
+            o.confirmed_order.name
+            if hasattr(o.confirmed_order, "name")
+            else str(o.confirmed_order),
+            str(o.confirmed_order),
+        )
+        o.deliver_status_text = DELIVER_STATUS_TEXT.get(
+            o.deliver_status.name
+            if hasattr(o.deliver_status, "name")
+            else str(o.deliver_status),
+            str(o.deliver_status),
+        )
+
+        # 加上會員姓名
+        o.member_name = member_map.get(str(o.member_id), "未知會員")
+
     return render_template("admin/orders.html", orders=orders)
 
 
@@ -91,9 +122,12 @@ def update_order(order_id):
         return "找不到訂單", 404
 
     form = request.form
-    order.confirmed_order = form.get("confirmed_order")
+    confirmed_str = form.get("confirmed_order")
+    deliver_str = form.get("deliver_status")
+
+    order.confirmed_order = OrderStatus[confirmed_str] if confirmed_str else None
+    order.deliver_status = DeliverStatus[deliver_str] if deliver_str else None
     order.deliver_date = form.get("deliver_date")
-    order.deliver_status = form.get("deliver_status")
 
     repo.update(order)
     return redirect(url_for("admin.show_members"))

@@ -64,7 +64,9 @@ class Order:
         return {
             "order_id": self.order_id,
             "order_date": self.order_date,
-            "confirmed_order": self.confirmed_order.name,
+            "confirmed_order": self.confirmed_order.name
+            if self.confirmed_order
+            else None,
             "desired_date": self.desired_date,
             "deliver_date": (
                 self.deliver_date.isoformat()
@@ -73,7 +75,7 @@ class Order:
                 if self.deliver_date
                 else ""
             ),
-            "deliver_status": self.deliver_status.name,
+            "deliver_status": self.deliver_status.name if self.deliver_status else None,
             "payment_method": self.payment_method,
             "member_id": self.member_id,
             "orders": self.orders,

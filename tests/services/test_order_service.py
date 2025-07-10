@@ -24,6 +24,12 @@ class FakeOrderRepo(OrderRepository):
     def get_by_member_id(self, member_id: UUID) -> List[Order]:
         return [o for o in self.saved_orders if o.member_id == member_id]
 
+    def update(self, order: Order) -> None:
+        for i, o in enumerate(self.saved_orders):
+            if o.order_id == order.order_id:
+                self.saved_orders[i] = order
+                return
+
 
 # Simulation data
 fake_product_map = {
