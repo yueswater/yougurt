@@ -5,6 +5,9 @@ from linebot import LineBotApi
 from linebot.models import (
     ButtonsTemplate,
     DatetimePickerTemplateAction,
+    MessageAction,
+    QuickReply,
+    QuickReplyButton,
     TemplateSendMessage,
     TextSendMessage,
 )
@@ -37,22 +40,7 @@ def handle_waiting_recipient(line_id: str, text: str) -> TextSendMessage:
 def handle_waiting_address(line_id: str, text: str) -> TextSendMessage:
     order_session.set_field(line_id, "address", text)
     order_session.set_field(line_id, "step", "waiting_orders")
-    return TextSendMessage(text="請輸入商品名稱與數量（例如：\n牛奶 1\n蜂蜜 2）：")
-
-
-# def handle_waiting_orders(line_id: str, text: str) -> TextSendMessage:
-#     try:
-#         order_items = parse_order_items(text)
-#         order_session.set_field(line_id, "orders", order_items)
-#         order_session.set_field(line_id, "step", "waiting_desired_date")
-
-#         summary = "\n".join([f"{k}：{v}瓶" for k, v in order_items.items()])
-#         return TextSendMessage(
-#             text=f"接下來請選擇期望配送日期。"
-#         )
-#     except Exception as e:
-#         logging.warning("商品解析錯誤：%s", str(e))
-#         return TextSendMessage(text="輸入格式錯誤，請重新輸入商品名稱與數量。格式例如：\n牛奶 1\n蜂蜜 2")
+    return TextSendMessage(text="請輸入「完整」商品名稱與數量，並在不同品項間換行（如下）：\n\n牛奶希臘優格 1\n蜂蜜脆片希臘優格 2")
 
 
 def handle_waiting_orders(line_id: str, text: str) -> TemplateSendMessage:
@@ -78,22 +66,28 @@ def handle_selected_date(line_id: str, date_str: str) -> TextSendMessage:
     orders = session.get("orders", {})
     desired_date = session.get("desired_date", "")
 
-    # 整理商品資訊
     orders_summary = (
         "\n".join([f"{name}：{qty}瓶" for name, qty in orders.items()]) if orders else "無"
     )
 
-    # 組合總結文字
     confirmation_text = (
         f"以下是您即將送出的訂單資訊：\n\n"
         f"收件人：{recipient}\n"
         f"收件人地址：{address}\n"
         f"商品：\n{orders_summary}\n"
         f"期望配送日期：{desired_date}\n\n"
-        f"請輸入「是」以確認訂單，或輸入「否」重新開始。"
+        f"請點選下方選項以確認訂單："
     )
 
-    return TextSendMessage(text=confirmation_text)
+    return TextSendMessage(
+        text=confirmation_text,
+        quick_reply=QuickReply(
+            items=[
+                QuickReplyButton(action=MessageAction(label="是", text="是")),
+                QuickReplyButton(action=MessageAction(label="否", text="否")),
+            ]
+        ),
+    )
 
 
 def handle_waiting_desired_date(line_id: str) -> TemplateSendMessage:

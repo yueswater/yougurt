@@ -1,7 +1,7 @@
 import logging
 
 from linebot import LineBotApi
-from linebot.models import TextSendMessage
+from linebot.models import MessageAction, QuickReply, QuickReplyButton, TextSendMessage
 
 from src.bot import constants
 from src.core.session.bind_session_store import BindSessionStore
@@ -22,7 +22,15 @@ def handle_waiting_name(line_id: str, name: str) -> TextSendMessage:
 def handle_waiting_phone(line_id: str, phone: str) -> TextSendMessage:
     session.set_field(line_id, "phone", phone)
     session.set_field(line_id, "step", "waiting_confirm")
-    return TextSendMessage(text="請輸入「是」以完成綁定，或輸入「否」重新輸入。")
+    return TextSendMessage(
+        text="請輸入「是」以完成綁定，或輸入「否」重新輸入。",
+        quick_reply=QuickReply(
+            items=[
+                QuickReplyButton(action=MessageAction(label="是", text="是")),
+                QuickReplyButton(action=MessageAction(label="否", text="否")),
+            ]
+        ),
+    )
 
 
 def handle_waiting_confirm(
