@@ -19,6 +19,7 @@ class Member:
     remain_volume: int
     prepaid: int = 0
     valid_member: bool = False
+    bank_account: str = ""
 
     @classmethod
     def from_dict(cls, data: Dict) -> "Member":
@@ -33,6 +34,7 @@ class Member:
             remain_volume=data["remain_volume"],
             prepaid=data["prepaid"],
             valid_member=data["valid_member"],
+            bank_account=data["bank_account"],
         )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -47,6 +49,7 @@ class Member:
             "remain_volume": self.remain_volume,
             "prepaid": self.prepaid,
             "valid_member": self.valid_member,
+            "bank_account": self.bank_account,
         }
 
     def __post_init__(self):

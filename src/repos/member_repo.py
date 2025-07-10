@@ -46,6 +46,7 @@ class GoogleSheetMemberRepository(MemberRepository):
             data["remain_volume"],
             data["prepaid"],
             data["valid_member"],
+            data["bank_account"],
         ]
         self.worksheet.append_row(row)
 
@@ -65,6 +66,7 @@ class GoogleSheetMemberRepository(MemberRepository):
                 "remain_volume": row["Remain Volume"],
                 "prepaid": row["Prepaid"],
                 "valid_member": row["Valid Member"],
+                "bank_account": row["Bank Account"],
             }
             members.append(Member.from_dict(data))
         return members
@@ -111,10 +113,11 @@ class GoogleSheetMemberRepository(MemberRepository):
             data["remain_volume"],
             data["prepaid"],
             data["valid_member"],
+            data["bank_account"],
         ]
 
         # Overwrite data
-        range_name = f"A{row_number}:J{row_number}"
+        range_name = f"A{row_number}:J{row_number}"  # noqa: E231
         self.worksheet.update(values=[new_row], range_name=range_name)
 
     def delete(self, line_id: str) -> None:

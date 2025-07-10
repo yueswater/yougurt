@@ -1,0 +1,3 @@
+BASIC_PRICE: int = 110
+MONTHS: int = 12
+BASIC_DELIVERY: int = MONTHS + 1
