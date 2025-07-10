@@ -25,7 +25,7 @@ member_service = MemberService(repo)
 
 def handle_annual_purchase_start(line_id: str):
     purchase_session.start_session(line_id)
-    purchase_session.set_field(line_id, "step", "waiting_purchase_code")
+    purchase_session.set_field(line_id, "step", "waiting_bank_account")
 
     return [
         TextSendMessage(
@@ -42,8 +42,11 @@ def handle_annual_purchase_start(line_id: str):
 # Step 2: 使用者輸入末五碼
 
 
-def handle_waiting_purchase_code(line_id: str, text: str):
-    purchase_session.set_field(line_id, "purchase_code", text)
+def handle_waiting_bank_account(line_id: str, text: str):
+    if not (text.isdigit() and len(text) == 5):
+        return TextSendMessage(text="❌ 請輸入正確的帳戶末五碼（5 位數字）")
+
+    purchase_session.set_field(line_id, "bank_account", text)
     purchase_session.set_field(line_id, "step", "waiting_purchase_confirm")
 
     return FlexSendMessage(
@@ -82,9 +85,11 @@ def handle_waiting_purchase_code(line_id: str, text: str):
 
 def handle_waiting_purchase_confirm(line_id: str, answer: str):
     if answer == "是":
-        code = purchase_session.get_session(line_id).get("purchase_code")
+        bank_account = purchase_session.get_session(line_id).get("bank_account")
         try:
-            member_service.update(line_id, code)
+            member_service.update_fields_by_line_id(
+                line_id=line_id, updates={"bank_account": bank_account}
+            )
             purchase_session.clear_session(line_id)
             return TextSendMessage(text="✅ 年購方案已確認完成，感謝您的匯款！")
         except Exception:
@@ -92,7 +97,7 @@ def handle_waiting_purchase_confirm(line_id: str, answer: str):
             return TextSendMessage(text="❌ 處理失敗，請稍後再試一次。")
 
     elif answer == "否":
-        purchase_session.set_field(line_id, "step", "waiting_purchase_code")
+        purchase_session.set_field(line_id, "step", "waiting_bank_account")
         return TextSendMessage(text="請重新輸入您帳戶的末五碼：")
 
     else:

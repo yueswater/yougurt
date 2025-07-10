@@ -64,8 +64,8 @@ def dispatch(
     # 年購方案流程（NEW）
     elif purchase_handler.purchase_session.is_active(user_id):
         step = purchase_handler.purchase_session.get_session(user_id).get("step")
-        if step == "waiting_purchase_code":
-            return purchase_handler.handle_waiting_purchase_code(user_id, text)
+        if step == "waiting_bank_account":
+            return purchase_handler.handle_waiting_bank_account(user_id, text)
         elif step == "waiting_purchase_confirm":
             return purchase_handler.handle_waiting_purchase_confirm(user_id, text)
 
