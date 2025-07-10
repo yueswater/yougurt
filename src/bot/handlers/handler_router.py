@@ -12,21 +12,18 @@ def dispatch(
 ) -> Message | list[Message]:
     # ✅ 防呆機制：如果任一流程正在進行，且輸入了其他流程的關鍵字，則中斷原流程
     if text in INTERRUPTING_WORDS:
-        if user_handler.is_binding_session_active(
-            user_id
-        ) and text != constants.KEYWORDS.get("Binding"):
+        if user_handler.is_binding_session_active(user_id):
             user_handler.binding_session.clear_session(user_id)
             return TextSendMessage(text="🔁 已為您中止原本的會員綁定流程，請重新選擇功能")
-        if order_handler.is_order_session_active(
-            user_id
-        ) and text != constants.KEYWORDS.get("Order"):
+        if order_handler.is_order_session_active(user_id):
             order_handler.order_session.clear_session(user_id)
             return TextSendMessage(text="🔁 已為您中止原本的訂購流程，請重新選擇功能")
-        if purchase_handler.purchase_session.is_active(
-            user_id
-        ) and text != constants.KEYWORDS.get("Purchase"):
+        if purchase_handler.purchase_session.is_active(user_id):
             purchase_handler.purchase_session.clear_session(user_id)
             return TextSendMessage(text="🔁 已為您中止原本的年購方案流程，請重新選擇功能")
+        # if delivery_handler.delivery_session.is_active(user_id):
+        #     delivery_handler.delivery_session.clear_session(user_id)
+        #     return TextSendMessage(text="🔁 已為您中止原本的剩餘次數查詢流程，請重新選擇功能")
 
     # 綁定流程
     if user_handler.is_binding_session_active(user_id):
