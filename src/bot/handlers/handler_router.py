@@ -4,6 +4,7 @@ from linebot.models import Message, TextSendMessage
 from src.bot import constants
 from src.bot.handlers import (
     contact_handler,
+    history_handler,
     order_handler,
     purchase_handler,
     user_handler,
@@ -75,6 +76,10 @@ def dispatch(
     # 聯絡我們流程
     elif text == constants.KEYWORDS.get("Contact", ""):
         return contact_handler.handle_contact_us()
+
+    # 新增查詢訂購紀錄的關鍵字處理
+    elif text == constants.KEYWORDS.get("History", ""):
+        return history_handler.handle_order_history(user_id)
 
     # 預設回覆
     else:
