@@ -1,0 +1,42 @@
+{# src/web/templates/admin/orders.html #}
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto p-6">
+    <h2 class="text-2xl font-bold mb-6 text-center">訂單列表</h2>
+
+    <div class="overflow-x-auto bg-white shadow-md rounded-lg">
+        <table class="w-full text-sm text-left text-gray-600">
+            <thead class="bg-gray-100 text-xs uppercase">
+                <tr>
+                    <th class="px-4 py-3">訂單編號</th>
+                    <th class="px-4 py-3">會員 ID</th>
+                    <th class="px-4 py-3">確認狀態</th>
+                    <th class="px-4 py-3">出貨日期</th>
+                    <th class="px-4 py-3">出貨狀態</th>
+                    <th class="px-4 py-3 text-right">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr class="border-b">
+                    <td class="px-4 py-2">{{ order.order_id }}</td>
+                    <td class="px-4 py-2">{{ order.member_id }}</td>
+                    <td class="px-4 py-2">{{ order.confirmed_order }}</td>
+                    <td class="px-4 py-2">
+                        {{ order.deliver_date.strftime('%Y-%m-%d') if order.deliver_date else '尚未指定' }}
+                    </td>
+                    <td class="px-4 py-2">{{ order.deliver_status }}</td>
+                    <td class="px-4 py-2 text-right">
+                        <a href="{{ url_for('admin.edit_order', order_id=order.order_id) }}"
+                            class="inline-flex items-center px-3 py-1 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow">
+                            <i class="fas fa-edit mr-1"></i> 編輯
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

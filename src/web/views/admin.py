@@ -5,6 +5,7 @@ from flask import Blueprint, redirect, render_template, request, url_for
 
 from src.models.member import Member
 from src.repos.member_repo import GoogleSheetMemberRepository
+from src.repos.order_repo import GoogleSheetOrderRepository
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -63,4 +64,36 @@ def create_member():
     )
     repo = GoogleSheetMemberRepository()
     repo.add(member)
+    return redirect(url_for("admin.show_members"))
+
+
+@admin_bp.route("/orders", methods=["GET"])
+def show_orders():
+    repo = GoogleSheetOrderRepository()
+    orders = repo.get_all()
+    return render_template("admin/orders.html", orders=orders)
+
+
+@admin_bp.route("/orders/<order_id>/edit", methods=["GET"])
+def edit_order(order_id):
+    repo = GoogleSheetOrderRepository()
+    order = repo.get_by_order_id(order_id)
+    if not order:
+        return "找不到訂單", 404
+    return render_template("admin/edit_order.html", order=order)
+
+
+@admin_bp.route("/orders/<order_id>/edit", methods=["POST"])
+def update_order(order_id):
+    repo = GoogleSheetOrderRepository()
+    order = repo.get_by_order_id(order_id)
+    if not order:
+        return "找不到訂單", 404
+
+    form = request.form
+    order.confirmed_order = form.get("confirmed_order")
+    order.deliver_date = form.get("deliver_date")
+    order.deliver_status = form.get("deliver_status")
+
+    repo.update(order)
     return redirect(url_for("admin.show_members"))

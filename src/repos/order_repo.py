@@ -1,4 +1,3 @@
-import json
 from abc import ABC, abstractmethod
 from typing import List, Optional, Union
 from uuid import UUID
@@ -66,11 +65,15 @@ class GoogleSheetOrderRepository(OrderRepository):
                 "order_date": row["Order Date"],
                 "confirmed_order": row["Confirmed Order"],
                 "desired_date": row["Desired Date"],
-                "deliver_date": row["Deliver Date"],
+                "deliver_date": row["Deliver Date"] or "",
                 "deliver_status": row["Deliver Status"],
                 "payment_method": row["Payment Method"],
                 "member_id": row["Member ID"],
-                "orders": json.loads(row["Orders"]),
+                "orders": {
+                    item.split(" * ")[0].strip(): int(item.split(" * ")[1].strip())
+                    for item in row["Orders"].split("、")
+                    if " * " in item
+                },
                 "order_fee": row["Order Fee"],
                 "total_fee": row["Total Fee"],
                 "recipient": row["Recipient"],

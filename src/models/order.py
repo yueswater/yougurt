@@ -18,9 +18,8 @@ class OrderStatus(Enum):
 
 class DeliverStatus(Enum):
     PREPARE = 1
-    READY = 2
-    DELIVERING = 3
-    DELIVERED = 4
+    DELIVERING = 2
+    DELIVERED = 3
 
 
 @dataclass
@@ -46,10 +45,10 @@ class Order:
         return cls(
             order_id=format_uuid(data["order_id"]),
             order_date=format_datetime(data.get("order_date", datetime.now())),
-            confirmed_order=OrderStatus(data["confirmed_order"]),
+            confirmed_order=OrderStatus[data["confirmed_order"]],
             desired_date=format_datetime(data["desired_date"]),
             deliver_date=format_datetime(data["deliver_date"]),
-            deliver_status=DeliverStatus(data["deliver_status"]),
+            deliver_status=DeliverStatus[data["deliver_status"]],
             payment_method=data["payment_method"],
             member_id=format_uuid(data["member_id"]),
             orders=data["orders"],  # dict
