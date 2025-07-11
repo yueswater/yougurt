@@ -18,9 +18,9 @@ def handle_order_history(line_id: str):
     member = member_service.get_by_line_id(line_id)
     orders = order_repo.get_by_member_id(member.member_id)
 
-    # 過濾掉 Deliver Date 為空的訂單，並依日期新到舊排序
+    # 過濾掉 Deliver Date 為 None 的訂單，並依日期新到舊排序
     filtered_orders = sorted(
-        [o for o in orders if o.deliver_date.strftime("%Y-%m-%d").strip()],
+        [o for o in orders if o.deliver_date is not None],
         key=lambda o: o.deliver_date,
         reverse=True,
     )[:12]
