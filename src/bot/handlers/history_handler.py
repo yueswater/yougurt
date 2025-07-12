@@ -1,8 +1,13 @@
 from linebot.models import (
+    BoxComponent,
+    BubbleContainer,
     CarouselColumn,
     CarouselTemplate,
+    FlexSendMessage,
     PostbackAction,
+    SeparatorComponent,
     TemplateSendMessage,
+    TextComponent,
     TextSendMessage,
 )
 
@@ -81,7 +86,7 @@ def handle_order_history(line_id: str):
     )
 
 
-def handle_order_detail(line_id: str, order_id: str) -> TextSendMessage:
+def handle_order_detail(line_id: str, order_id: str) -> FlexSendMessage:
     if not history_session.is_active(line_id):
         return TextSendMessage(text="⚠️ 無法辨識的操作，請先從『訂購紀錄』功能進入")
 
@@ -92,20 +97,37 @@ def handle_order_detail(line_id: str, order_id: str) -> TextSendMessage:
     if not order:
         return TextSendMessage(text="❌ 找不到這筆訂單")
 
-    # 格式化內容
-    order_lines = [
-        f"訂單編號：{order.order_id}",
-        f"收件人姓名：{order.recipient}",
-        f"地址：{order.address}",
-        "配送內容：",
-    ]
-    for name, qty in order.orders.items():
-        order_lines.append(f"　{name} x {qty}瓶")
-    order_lines += [
-        f"額度扣除：{order.order_fee}",
-        f"訂購日期：{order.order_date.strftime('%Y-%m-%d')}",
-        f"訂單狀態：{order.confirmed_order.name}",
-        f"配送狀態：{order.deliver_status.name}",
+    # 產品資訊逐條列出
+    product_lines = [
+        TextComponent(text=f"∙ {name} x {qty}瓶", size="md", color="#555555")
+        for name, qty in order.orders.items()
     ]
 
-    return TextSendMessage(text="\n".join(order_lines))
+    # 建立整體內容
+    contents = BubbleContainer(
+        body=BoxComponent(
+            layout="vertical",
+            contents=[
+                TextComponent(text="訂單詳情", weight="bold", size="lg"),
+                SeparatorComponent(margin="md"),
+                TextComponent(text=f"訂單編號：{str(order.order_id)[:5]}", wrap=True),
+                TextComponent(text=f"收件人：{order.recipient}", wrap=True),
+                TextComponent(text=f"地址：{order.address}", wrap=True),
+                TextComponent(text="配送內容：", margin="md"),
+                *product_lines,
+                SeparatorComponent(margin="md"),
+                TextComponent(text=f"額度扣除：{order.order_fee}"),
+                TextComponent(text=f"訂購日期：{order.order_date.strftime('%Y-%m-%d')}"),
+                TextComponent(text=f"期望配送：{order.desired_date.strftime('%Y-%m-%d')}"),
+                TextComponent(
+                    text=f"到貨日期：{order.deliver_date.strftime('%Y-%m-%d')}"
+                    if order.deliver_date
+                    else ""
+                ),
+                TextComponent(text=f"訂單狀態：{order.confirmed_order.name}"),
+                TextComponent(text=f"配送狀態：{order.deliver_status.name}"),
+            ],
+        )
+    )
+
+    return FlexSendMessage(alt_text="這是您的訂單詳情", contents=contents)

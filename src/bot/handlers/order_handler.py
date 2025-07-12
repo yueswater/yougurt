@@ -158,7 +158,7 @@ def handle_waiting_confirm(
                 converted_orders[pid] = qty
 
             # Create an order
-            _ = order_service.create_order(
+            created_order = order_service.create_order(
                 line_id=line_id,
                 recipient=recipient,
                 address=address,
@@ -169,7 +169,57 @@ def handle_waiting_confirm(
             )
 
             order_session.clear_session(line_id)
-            return TextSendMessage(text="訂單已建立成功！謝謝您的訂購。")
+
+            # 建立商品清單區塊
+            product_lines = []
+            for pid, qty in created_order.orders.items():
+                product = product_map.get(pid)
+                if product:
+                    product_lines.append(
+                        TextComponent(
+                            text=f"• {product.product_name} x {qty}瓶",
+                            size="md",
+                            wrap=True,
+                        )
+                    )
+
+            # 訂單詳情 Bubble
+            order_detail_bubble = BubbleContainer(
+                body=BoxComponent(
+                    layout="vertical",
+                    contents=[
+                        TextComponent(text="訂單詳情", weight="bold", size="lg"),
+                        SeparatorComponent(margin="md"),
+                        TextComponent(
+                            text=f"訂單編號：{str(created_order.order_id)[:5]}", wrap=True
+                        ),
+                        TextComponent(
+                            text=f"收件人姓名：{created_order.recipient}", wrap=True
+                        ),
+                        TextComponent(text=f"地址：{created_order.address}", wrap=True),
+                        TextComponent(text="配送內容：", margin="md"),
+                        *product_lines,
+                        TextComponent(
+                            text=f"額度扣除：${created_order.order_fee}",
+                            margin="md",
+                            wrap=True,
+                        ),
+                        TextComponent(
+                            text=f"訂購日期：{created_order.order_date.strftime('%Y-%m-%d')}",
+                            wrap=True,
+                        ),
+                        TextComponent(
+                            text=f"期望配送日期：{created_order.desired_date.strftime('%Y-%m-%d')}",
+                            wrap=True,
+                        ),
+                    ],
+                )
+            )
+
+            return [
+                TextSendMessage(text="訂單已建立成功！謝謝您的訂購。"),
+                FlexSendMessage(alt_text="訂單詳情", contents=order_detail_bubble),
+            ]
 
         except Exception:
             logging.exception("訂單建立失敗")

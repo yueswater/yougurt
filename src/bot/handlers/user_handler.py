@@ -17,7 +17,7 @@ member_service = MemberService(repo)
 def handle_waiting_name(line_id: str, name: str) -> TextSendMessage:
     binding_session.set_field(line_id, "name", name)
     binding_session.set_field(line_id, "step", "waiting_phone")
-    return TextSendMessage(text="請輸入您的手機號碼\n例如：0912345678 或 0912-345678")
+    return TextSendMessage(text="請輸入您的手機號碼\n例如：0912345678 或 0912-345-678")
 
 
 @validate_phone_format
