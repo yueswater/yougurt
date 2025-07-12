@@ -4,6 +4,7 @@ from linebot.models import Message, TextSendMessage
 from src.bot import constants
 from src.bot.handlers import (
     contact_handler,
+    delivery_handler,
     history_handler,
     order_handler,
     purchase_handler,
@@ -29,7 +30,6 @@ def dispatch(
             return TextSendMessage(text="🔁 已為您中止原本的年購方案流程，請重新選擇功能")
         if history_handler.history_session.is_active(user_id):
             history_handler.history_session.clear_session(user_id)
-            return TextSendMessage(text="🔁 已為您中止原本的訂購紀錄查詢流程，請重新選擇功能")
 
     # 綁定流程
     if user_handler.is_binding_session_active(user_id):
@@ -58,31 +58,49 @@ def dispatch(
         return order_handler.handle_order_step(user_id, text, line_bot_api)
 
     elif text == constants.KEYWORDS.get("Order", ""):
-        if order_handler.member_service.exists(user_id):
+        if not order_handler.member_service.exists(user_id):
+            return TextSendMessage(
+                text=constants.MEMBERSHIP_KEYWORDS.get("NOT_MEMBER", "")
+            )
+        elif not order_handler.member_service.check_valid_member(user_id):
+            return TextSendMessage(
+                text=constants.MEMBERSHIP_KEYWORDS.get("NOT_PAY", "")
+            )
+        else:
             return order_handler.initiate_order(user_id)
-        return TextSendMessage(text="請先完成會員綁定喔～")
+
+        # if order_handler.member_service.exists(user_id):
+        #     return order_handler.initiate_order(user_id)
+        # return TextSendMessage(text="您尚未綁定會員，請先綁定帳號才能預約訂購")
 
     # 剩餘次數查詢流程
     elif text == constants.KEYWORDS.get("Remain Order", ""):
-        if not order_handler.member_service.exists(user_id):
-            return TextSendMessage(text="您尚未綁定會員，請先綁定帳號才能查詢剩餘次數。")
-
-        member = order_handler.member_service.get_by_line_id(user_id)
-        remain = member.remain_delivery
-        prepaid = member.prepaid
-
-        return TextSendMessage(text=f"您目前的剩餘配送次數為：{remain} 次\n訂購額度為：${prepaid}")
+        if not delivery_handler.member_service.exists(user_id):
+            return TextSendMessage(
+                text=constants.MEMBERSHIP_KEYWORDS.get("NOT_MEMBER", "")
+            )
+        elif not delivery_handler.member_service.check_valid_member(user_id):
+            return TextSendMessage(
+                text=constants.MEMBERSHIP_KEYWORDS.get("NOT_PAY", "")
+            )
+        else:
+            return delivery_handler.handle_check_quota(user_id)
 
     # 聯絡我們流程
     elif text == constants.KEYWORDS.get("Contact", ""):
         return contact_handler.handle_contact_us()
 
-    # # 新增查詢訂購紀錄的關鍵字處理
-    # elif text == constants.KEYWORDS.get("History", ""):
-    #     return history_handler.handle_order_history(user_id)
-
     elif text == constants.KEYWORDS.get("History", ""):
-        return history_handler.handle_order_history(user_id)
+        if not history_handler.member_service.exists(user_id):
+            return TextSendMessage(
+                text=constants.MEMBERSHIP_KEYWORDS.get("NOT_MEMBER", "")
+            )
+        elif not history_handler.member_service.check_valid_member(user_id):
+            return TextSendMessage(
+                text=constants.MEMBERSHIP_KEYWORDS.get("NOT_PAY", "")
+            )
+        else:
+            return history_handler.handle_order_history(user_id)
 
     elif text.startswith("查看訂單詳情 "):
         order_id = text.replace("查看訂單詳情 ", "")

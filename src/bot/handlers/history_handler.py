@@ -26,8 +26,6 @@ member_service = MemberService(member_repo)
 
 
 def handle_order_history(line_id: str):
-    if not member_service.exists(line_id):
-        return TextSendMessage(text="請先完成會員綁定才能查詢訂購紀錄喔～")
 
     history_session.start_session(line_id)
 
@@ -91,7 +89,9 @@ def handle_order_detail(line_id: str, order_id: str) -> FlexSendMessage:
         return TextSendMessage(text="⚠️ 無法辨識的操作，請先從『訂購紀錄』功能進入")
 
     if not member_service.exists(line_id):
-        return TextSendMessage(text="請先完成會員綁定才能查詢訂單詳情喔～")
+        return TextSendMessage(text="您尚未綁定會員，請先綁定帳號才能查詢訂購紀錄。")
+    elif not member_service.check_valid_member(line_id):
+        return TextSendMessage(text="您尚未完成付款，請先付款後等待審核完成。")
 
     order = order_repo.get_by_order_id(order_id)
     if not order:
@@ -122,7 +122,7 @@ def handle_order_detail(line_id: str, order_id: str) -> FlexSendMessage:
                 TextComponent(
                     text=f"到貨日期：{order.deliver_date.strftime('%Y-%m-%d')}"
                     if order.deliver_date
-                    else ""
+                    else "到貨日期："
                 ),
                 TextComponent(text=f"訂單狀態：{order.confirmed_order.name}"),
                 TextComponent(text=f"配送狀態：{order.deliver_status.name}"),
