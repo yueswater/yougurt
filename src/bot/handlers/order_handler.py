@@ -127,8 +127,8 @@ def handle_waiting_desired_date(line_id: str) -> TemplateSendMessage:
                     label="選擇日期",
                     data=f"action=select_date&line_id={line_id}",
                     mode="date",  # 也可以是 "time" 或 "datetime"
-                    initial=datetime.today().strftime("%Y-%m-%d"),
-                    min=datetime.today().strftime("%Y-%m-%d"),
+                    initial=(datetime.today() + timedelta(days=7)).strftime("%Y-%m-%d"),
+                    min=(datetime.today() + timedelta(days=7)).strftime("%Y-%m-%d"),
                     max=(datetime.today() + timedelta(days=14)).strftime("%Y-%m-%d"),
                 )
             ],
