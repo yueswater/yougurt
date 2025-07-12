@@ -59,14 +59,20 @@ def handle_message(event):
 
 @handler.add(PostbackEvent)
 def handle_postback(event):
+    print("✅ 收到 PostbackEvent")  # 測試是否有進來
+    user_id = event.source.user_id
     data = event.postback.data
     params = event.postback.params
-    line_id = event.source.user_id
 
-    if "action=select_date" in data:
+    # 特殊處理：日期選擇
+    if "action=select_date" in data and params:
         selected_date = params.get("date")
-        reply = order_handler.handle_selected_date(line_id, selected_date)
-        line_bot_api.reply_message(event.reply_token, reply)
+        reply = order_handler.handle_selected_date(user_id, selected_date)
+    else:
+        # 一般 postback 處理
+        reply = handler_router.dispatch_postback(user_id, data, line_bot_api)
+
+    line_bot_api.reply_message(event.reply_token, reply)
 
 
 if __name__ == "__main__":

@@ -27,9 +27,9 @@ def dispatch(
         if purchase_handler.purchase_session.is_active(user_id):
             purchase_handler.purchase_session.clear_session(user_id)
             return TextSendMessage(text="🔁 已為您中止原本的年購方案流程，請重新選擇功能")
-        # if delivery_handler.delivery_session.is_active(user_id):
-        #     delivery_handler.delivery_session.clear_session(user_id)
-        #     return TextSendMessage(text="🔁 已為您中止原本的剩餘次數查詢流程，請重新選擇功能")
+        if history_handler.history_session.is_active(user_id):
+            history_handler.history_session.clear_session(user_id)
+            return TextSendMessage(text="🔁 已為您中止原本的訂購紀錄查詢流程，請重新選擇功能")
 
     # 綁定流程
     if user_handler.is_binding_session_active(user_id):
@@ -77,10 +77,25 @@ def dispatch(
     elif text == constants.KEYWORDS.get("Contact", ""):
         return contact_handler.handle_contact_us()
 
-    # 新增查詢訂購紀錄的關鍵字處理
+    # # 新增查詢訂購紀錄的關鍵字處理
+    # elif text == constants.KEYWORDS.get("History", ""):
+    #     return history_handler.handle_order_history(user_id)
+
     elif text == constants.KEYWORDS.get("History", ""):
         return history_handler.handle_order_history(user_id)
+
+    elif text.startswith("查看訂單詳情 "):
+        order_id = text.replace("查看訂單詳情 ", "")
+        return history_handler.handle_order_detail(user_id, order_id)
 
     # 預設回覆
     else:
         return TextSendMessage(text=constants.Message.get("OTHER_NEEDED", ""))
+
+
+def dispatch_postback(user_id: str, data: str, line_bot_api: LineBotApi):
+    if data.startswith("order_detail_"):
+        order_id = data.replace("order_detail_", "")
+        return history_handler.handle_order_detail(user_id, order_id)
+
+    return TextSendMessage(text="❌ 無法辨識的操作，請再試一次")
