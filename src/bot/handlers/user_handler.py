@@ -65,7 +65,7 @@ def handle_waiting_phone(line_id: str, phone: str) -> FlexSendMessage:
                         action=MessageAction(label="是", text="是"),
                     ),
                     ButtonComponent(
-                        style="secondary",
+                        style="primary",
                         color="#ff4444",
                         action=MessageAction(label="否", text="否"),
                     ),

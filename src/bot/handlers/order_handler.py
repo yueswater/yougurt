@@ -70,11 +70,11 @@ def handle_selected_date(line_id: str, date_str: str) -> FlexSendMessage:
     orders = session.get("orders", {})
     desired_date = session.get("desired_date", "")
 
-    orders_summary = (
-        "\n".join([f"∙ {name}：{qty}瓶" for name, qty in orders.items()])
-        if orders
-        else "無"
-    )
+    order_summary_components = [TextComponent(text="商品：", margin="md")]
+    for name, qty in orders.items():
+        order_summary_components.append(
+            TextComponent(text=f"• {name} x {qty}瓶", wrap=True, margin="md")
+        )
 
     return FlexSendMessage(
         alt_text="請確認訂單資訊",
@@ -84,10 +84,12 @@ def handle_selected_date(line_id: str, date_str: str) -> FlexSendMessage:
                 contents=[
                     TextComponent(text="訂單確認", weight="bold", size="lg"),
                     SeparatorComponent(margin="md"),
-                    TextComponent(text=f"收件人：{recipient}", wrap=True),
-                    TextComponent(text=f"地址：{address}", wrap=True),
-                    TextComponent(text=f"商品：\n{orders_summary}", wrap=True),
-                    TextComponent(text=f"配送日期：{desired_date}", wrap=True),
+                    TextComponent(text=f"收件人：{recipient}", wrap=True, margin="md"),
+                    TextComponent(text=f"地址：{address}", wrap=True, margin="md"),
+                    *order_summary_components,  # 插入你拆開的商品項目
+                    TextComponent(
+                        text=f"期望配送日期：{desired_date}", wrap=True, margin="md"
+                    ),
                     SeparatorComponent(margin="md"),
                     TextComponent(
                         text="請點選下方按鈕確認是否送出：", size="sm", color="#888888", margin="md"
@@ -104,7 +106,7 @@ def handle_selected_date(line_id: str, date_str: str) -> FlexSendMessage:
                         action=MessageAction(label="是", text="是"),
                     ),
                     ButtonComponent(
-                        style="secondary",
+                        style="primary",
                         color="#ff4444",  # 紅色
                         action=MessageAction(label="否", text="否"),
                     ),
@@ -118,9 +120,9 @@ def handle_waiting_desired_date(line_id: str) -> TemplateSendMessage:
     order_session.set_field(line_id, "step", "waiting_confirm")
 
     return TemplateSendMessage(
-        alt_text="請選擇預計配送日期",
+        alt_text="請選擇期望配送日期",
         template=ButtonsTemplate(
-            title="請選擇預計配送日期",
+            title="請選擇期望配送日期",
             text="點選下方按鈕選擇日期",
             actions=[
                 DatetimePickerTemplateAction(
@@ -180,6 +182,7 @@ def handle_waiting_confirm(
                             text=f"• {product.product_name} x {qty}瓶",
                             size="md",
                             wrap=True,
+                            margin="sm",  # 加入這一行
                         )
                     )
 
@@ -191,14 +194,20 @@ def handle_waiting_confirm(
                         TextComponent(text="訂單詳情", weight="bold", size="lg"),
                         SeparatorComponent(margin="md"),
                         TextComponent(
-                            text=f"訂單編號：{str(created_order.order_id)[:5]}", wrap=True
+                            text=f"訂單編號：{str(created_order.order_id)[:5]}",
+                            wrap=True,
+                            margin="md",
                         ),
                         TextComponent(
-                            text=f"收件人姓名：{created_order.recipient}", wrap=True
+                            text=f"收件人姓名：{created_order.recipient}",
+                            wrap=True,
+                            margin="md",
                         ),
-                        TextComponent(text=f"地址：{created_order.address}", wrap=True),
+                        TextComponent(
+                            text=f"地址：{created_order.address}", wrap=True, margin="md"
+                        ),
                         TextComponent(text="配送內容：", margin="md"),
-                        *product_lines,
+                        *product_lines,  # 若太擠可以考慮在 product_lines 中的每一項也加上 margin
                         TextComponent(
                             text=f"額度扣除：${created_order.order_fee}",
                             margin="md",
@@ -206,10 +215,12 @@ def handle_waiting_confirm(
                         ),
                         TextComponent(
                             text=f"訂購日期：{created_order.order_date.strftime('%Y-%m-%d')}",
+                            margin="md",
                             wrap=True,
                         ),
                         TextComponent(
                             text=f"期望配送日期：{created_order.desired_date.strftime('%Y-%m-%d')}",
+                            margin="md",
                             wrap=True,
                         ),
                     ],
@@ -254,11 +265,11 @@ def handle_order_step(
 
 
 def initiate_order(line_id: str) -> TextSendMessage:
-    if not member_service.exists(line_id):
-        return TextSendMessage(text="您尚未綁定會員，請先綁定會員後再下單。")
+    # if not member_service.exists(line_id):
+    #     return TextSendMessage(text="您尚未綁定會員，請先綁定會員後再下單。")
 
-    if not member_service.check_valid_member(line_id):
-        return TextSendMessage(text="您尚未完成付款，請先付款後等待審核完成。")
+    # if not member_service.check_valid_member(line_id):
+    #     return TextSendMessage(text="您尚未完成付款，請先付款後等待審核完成。")
 
     order_session.start_session(line_id)
     return TextSendMessage(text="請輸入收件人姓名")

@@ -66,6 +66,7 @@ def handle_waiting_bank_account(line_id: str, text: str):
             ),
             footer=BoxComponent(
                 layout="horizontal",
+                spacing="md",  # 關鍵：加入 spacing 讓按鈕不會貼太近
                 contents=[
                     ButtonComponent(
                         style="primary",
@@ -73,7 +74,7 @@ def handle_waiting_bank_account(line_id: str, text: str):
                         action=MessageAction(label="是", text="是"),
                     ),
                     ButtonComponent(
-                        style="secondary",
+                        style="primary",
                         color="#ff4444",
                         action=MessageAction(label="否", text="否"),
                     ),

@@ -21,13 +21,13 @@ def dispatch(
     if text in INTERRUPTING_WORDS:
         if user_handler.is_binding_session_active(user_id):
             user_handler.binding_session.clear_session(user_id)
-            return TextSendMessage(text="🔁 已為您中止原本的會員綁定流程，請重新選擇功能")
+            # return TextSendMessage(text="🔁 已為您中止原本的會員綁定流程，請重新選擇功能")
         if order_handler.is_order_session_active(user_id):
             order_handler.order_session.clear_session(user_id)
-            return TextSendMessage(text="🔁 已為您中止原本的訂購流程，請重新選擇功能")
+            # return TextSendMessage(text="🔁 已為您中止原本的訂購流程，請重新選擇功能")
         if purchase_handler.purchase_session.is_active(user_id):
             purchase_handler.purchase_session.clear_session(user_id)
-            return TextSendMessage(text="🔁 已為您中止原本的年購方案流程，請重新選擇功能")
+            # return TextSendMessage(text="🔁 已為您中止原本的年購方案流程，請重新選擇功能")
         if history_handler.history_session.is_active(user_id):
             history_handler.history_session.clear_session(user_id)
 
