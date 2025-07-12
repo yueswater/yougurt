@@ -97,35 +97,46 @@ def handle_order_detail(line_id: str, order_id: str) -> FlexSendMessage:
     if not order:
         return TextSendMessage(text="❌ 找不到這筆訂單")
 
-    # 產品資訊逐條列出
+    # 產品資訊逐條列出，加入 margin
     product_lines = [
-        TextComponent(text=f"∙ {name} x {qty}瓶", size="md", color="#555555")
+        TextComponent(
+            text=f"∙ {name} x {qty}瓶", size="md", color="#555555", margin="md"
+        )
         for name, qty in order.orders.items()
     ]
 
-    # 建立整體內容
+    # 建立整體內容，欄位加入 margin
     contents = BubbleContainer(
         body=BoxComponent(
             layout="vertical",
             contents=[
                 TextComponent(text="訂單詳情", weight="bold", size="lg"),
                 SeparatorComponent(margin="md"),
-                TextComponent(text=f"訂單編號：{str(order.order_id)[:5]}", wrap=True),
-                TextComponent(text=f"收件人：{order.recipient}", wrap=True),
-                TextComponent(text=f"地址：{order.address}", wrap=True),
+                TextComponent(
+                    text=f"訂單編號：{str(order.order_id)[:5]}", wrap=True, margin="md"
+                ),
+                TextComponent(text=f"收件人：{order.recipient}", wrap=True, margin="md"),
+                TextComponent(text=f"地址：{order.address}", wrap=True, margin="md"),
                 TextComponent(text="配送內容：", margin="md"),
                 *product_lines,
                 SeparatorComponent(margin="md"),
-                TextComponent(text=f"額度扣除：${order.order_fee}"),
-                TextComponent(text=f"訂購日期：{order.order_date.strftime('%Y-%m-%d')}"),
-                TextComponent(text=f"期望配送：{order.desired_date.strftime('%Y-%m-%d')}"),
+                TextComponent(text=f"額度扣除：${order.order_fee}", margin="md"),
                 TextComponent(
-                    text=f"到貨日期：{order.deliver_date.strftime('%Y-%m-%d')}"
-                    if order.deliver_date
-                    else "到貨日期："
+                    text=f"訂購日期：{order.order_date.strftime('%Y-%m-%d')}", margin="md"
                 ),
-                TextComponent(text=f"訂單狀態：{order.confirmed_order.name}"),
-                TextComponent(text=f"配送狀態：{order.deliver_status.name}"),
+                TextComponent(
+                    text=f"期望配送：{order.desired_date.strftime('%Y-%m-%d')}", margin="md"
+                ),
+                TextComponent(
+                    text=(
+                        f"到貨日期：{order.deliver_date.strftime('%Y-%m-%d')}"
+                        if order.deliver_date
+                        else "到貨日期："
+                    ),
+                    margin="md",
+                ),
+                TextComponent(text=f"訂單狀態：{order.confirmed_order.name}", margin="md"),
+                TextComponent(text=f"配送狀態：{order.deliver_status.name}", margin="md"),
             ],
         )
     )
