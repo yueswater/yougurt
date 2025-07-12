@@ -6,11 +6,12 @@ Message = {
 
 KEYWORDS = {
     "Binding": "綁定會員",
-    "Order": "優格訂購",
+    "Order": "預約訂購",
     "Purchase": "年購方案",
-    "Remain Order": "剩餘次數查詢",
+    "Remain Order": "剩餘次數及餘額查詢",
     "History": "訂購紀錄",
     "Contact": "聯絡我們",
+    "ORDER_INFO": "查看訂單詳情",
 }
 
 MEMBERSHIP_KEYWORDS = {

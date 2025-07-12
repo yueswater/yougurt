@@ -103,8 +103,8 @@ def dispatch(
         else:
             return history_handler.handle_order_history(user_id)
 
-    elif text.startswith("查看訂單詳情 "):
-        order_id = text.replace("查看訂單詳情 ", "")
+    elif text.startswith(constants.KEYWORDS.get("ORDER_INFO", "")):
+        order_id = text.replace(constants.KEYWORDS.get("ORDER_INFO", ""), "")
         return history_handler.handle_order_detail(user_id, order_id)
 
     # 預設回覆
