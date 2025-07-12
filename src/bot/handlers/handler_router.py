@@ -51,7 +51,12 @@ def dispatch(
             return purchase_handler.handle_waiting_purchase_confirm(user_id, text)
 
     elif text == constants.KEYWORDS.get("Purchase", ""):
-        return purchase_handler.handle_annual_purchase_start(user_id)
+        if not purchase_handler.member_service.exists(user_id):
+            return TextSendMessage(
+                text=constants.MEMBERSHIP_KEYWORDS.get("NOT_MEMBER", "")
+            )
+        else:
+            return purchase_handler.handle_annual_purchase_start(user_id)
 
     # 下訂流程
     elif order_handler.is_order_session_active(user_id):
@@ -68,10 +73,6 @@ def dispatch(
             )
         else:
             return order_handler.initiate_order(user_id)
-
-        # if order_handler.member_service.exists(user_id):
-        #     return order_handler.initiate_order(user_id)
-        # return TextSendMessage(text="您尚未綁定會員，請先綁定帳號才能預約訂購")
 
     # 剩餘次數查詢流程
     elif text == constants.KEYWORDS.get("Remain Order", ""):
