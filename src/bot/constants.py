@@ -2,6 +2,7 @@ Message = {
     "ALREADY_MEMBER": "您已經是會員囉，無需再次綁定～",
     "OTHER_NEEDED": "請使用圖文選單開始操作，如有其他需求請點選『聯絡我們』",
     "BIND_SUCESS": "您好，{name}，已成功綁定會員！",
+    "PURCHASE": "已收到您的匯款訊息，我們會盡快安排工作人員審核資料（約1-2個工作天）",
 }
 
 KEYWORDS = {

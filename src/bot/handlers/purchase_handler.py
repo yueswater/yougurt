@@ -12,6 +12,7 @@ from linebot.models import (
     TextSendMessage,
 )
 
+from src.bot import constants
 from src.core.session.purchase_session_store import PurchaseSessionStore
 from src.repos.member_repo import GoogleSheetMemberRepository
 from src.services.member_service import MemberService
@@ -38,7 +39,7 @@ def handle_annual_purchase_start(line_id: str):
             original_content_url="https://example.com/bank_info.jpg",
             preview_image_url="https://example.com/bank_info.jpg",
         ),
-        TextSendMessage(text="✅ 匯款完成後，請輸入您帳戶的末五碼："),
+        TextSendMessage(text="⚠️ 匯款完成後，請輸入您帳戶的末五碼，以便我們進行核對："),
     ]
 
 
@@ -95,7 +96,7 @@ def handle_waiting_purchase_confirm(line_id: str, answer: str):
                 line_id=line_id, updates={"bank_account": bank_account}
             )
             purchase_session.clear_session(line_id)
-            return TextSendMessage(text="✅ 年購方案已確認完成，感謝您的匯款！")
+            return TextSendMessage(text=constants.Message.get("PURCHASE", ""))
         except Exception:
             logging.exception("年購方案儲存失敗")
             return TextSendMessage(text="❌ 處理失敗，請稍後再試一次。")
