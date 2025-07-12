@@ -1,7 +1,16 @@
 import logging
 
 from linebot import LineBotApi
-from linebot.models import MessageAction, QuickReply, QuickReplyButton, TextSendMessage
+from linebot.models import (
+    BoxComponent,
+    BubbleContainer,
+    ButtonComponent,
+    FlexSendMessage,
+    MessageAction,
+    SeparatorComponent,
+    TextComponent,
+    TextSendMessage,
+)
 
 from src.bot import constants
 from src.bot.utils.member_utils import validate_phone_format
@@ -21,16 +30,47 @@ def handle_waiting_name(line_id: str, name: str) -> TextSendMessage:
 
 
 @validate_phone_format
-def handle_waiting_phone(line_id: str, phone: str) -> TextSendMessage:
+def handle_waiting_phone(line_id: str, phone: str) -> FlexSendMessage:
     binding_session.set_field(line_id, "phone", phone)
     binding_session.set_field(line_id, "step", "waiting_confirm")
-    return TextSendMessage(
-        text="請輸入「是」以完成綁定，或輸入「否」重新輸入。",
-        quick_reply=QuickReply(
-            items=[
-                QuickReplyButton(action=MessageAction(label="是", text="是")),
-                QuickReplyButton(action=MessageAction(label="否", text="否")),
-            ]
+
+    name = binding_session.get_session(line_id).get("name")
+
+    return FlexSendMessage(
+        alt_text="請確認您的綁定資訊",
+        contents=BubbleContainer(
+            body=BoxComponent(
+                layout="vertical",
+                contents=[
+                    TextComponent(text="會員綁定資訊確認", weight="bold", size="lg"),
+                    SeparatorComponent(margin="md"),
+                    TextComponent(text=f"姓名：{name}", wrap=True, margin="md"),
+                    TextComponent(text=f"電話：{phone}", wrap=True, margin="md"),
+                    SeparatorComponent(margin="md"),
+                    TextComponent(
+                        text="請確認以上資訊是否正確：",
+                        size="md",
+                        color="#888888",
+                        margin="sm",
+                    ),
+                ],
+            ),
+            footer=BoxComponent(
+                layout="horizontal",
+                spacing="md",
+                contents=[
+                    ButtonComponent(
+                        style="primary",
+                        color="#00C851",
+                        action=MessageAction(label="是", text="是"),
+                    ),
+                    ButtonComponent(
+                        style="secondary",
+                        color="#ff4444",
+                        action=MessageAction(label="否", text="否"),
+                    ),
+                ],
+            ),
         ),
     )
 
