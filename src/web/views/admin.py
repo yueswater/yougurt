@@ -52,7 +52,7 @@ def new_member_form():
 def create_member():
     form = request.form
 
-    payment_method = form.get("payment_method")  # 現金 or 轉帳
+    payment_method = form.get("payment_method")  # Cash or Transfer
     bank_account = form.get("bank_account") if payment_method == "transfer" else None
 
     member = Member(
@@ -81,7 +81,7 @@ def show_orders():
     orders = order_repo.get_all()
     members = get_cached_members()
 
-    # 用 dict 快速查會員名稱
+    # Use dict to quickly check member names
     member_map = {str(m.member_id): m.member_name for m in members}
 
     for o in orders:
@@ -99,7 +99,7 @@ def show_orders():
         #     str(o.deliver_status),
         # )
 
-        # 加上會員姓名
+        # Add member name
         o.member_name = member_map.get(str(o.member_id), "未知會員")
 
     return render_template("admin/orders.html", orders=orders)
@@ -123,14 +123,14 @@ def update_order(order_id):
 
     form = request.form
 
-    # ✅ 修正 checkbox 傳送邏輯
+    # Fix checkbox transmission logic
     confirmed_list = form.getlist("confirmed_order")
     confirmed_str = "CONFIRMED" if "CONFIRMED" in confirmed_list else "false"
     order.confirmed_order = (
         OrderStatus.CONFIRMED if confirmed_str == "CONFIRMED" else OrderStatus.PENDING
     )
 
-    # 出貨狀態與日期
+    # Shipping status and date
     deliver_str = form.get("deliver_status")
     deliver_date_str = form.get("deliver_date")
     order.deliver_status = DeliverStatus[deliver_str] if deliver_str else None

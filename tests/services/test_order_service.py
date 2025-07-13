@@ -33,8 +33,8 @@ class FakeOrderRepo(OrderRepository):
 
 # Simulation data
 fake_product_map = {
-    "milk": Product(product_id="milk", product_name="牛奶", price=100),
-    "honey": Product(product_id="honey", product_name="蜂蜜", price=200),
+    "milk": Product(product_id="milk", product_name="牛奶", price=100, category="優格"),
+    "honey": Product(product_id="honey", product_name="蜂蜜", price=200, category="優格"),
 }
 
 

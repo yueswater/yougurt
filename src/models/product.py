@@ -7,6 +7,7 @@ class Product:
     product_id: str
     product_name: str
     price: int
+    category: str
 
     @classmethod
     def from_dict(cls, data: Dict) -> "Product":
@@ -14,6 +15,7 @@ class Product:
             product_id=data["product_id"],
             product_name=data["product_name"],
             price=data["price"],
+            category=data["category"],
         )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -21,6 +23,7 @@ class Product:
             "product_id": self.product_id,
             "product_name": self.product_name,
             "price": self.price,
+            "category": self.category,
         }
 
     def __post_init__(self):

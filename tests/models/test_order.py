@@ -13,8 +13,12 @@ def test_order_valid_data(valid_order):
 
 def test_order_calculate_total_fee(valid_order):
     product_map = {
-        "P001": Product(product_id="P001", product_name="優格原味", price=100),
-        "P002": Product(product_id="P002", product_name="優格蜂蜜", price=120),
+        "P001": Product(
+            product_id="P001", product_name="優格原味", price=100, category="優格"
+        ),
+        "P002": Product(
+            product_id="P002", product_name="優格蜂蜜", price=120, category="優格"
+        ),
     }
     valid_order.orders = {"P001": 2, "P002": 1}  # 100 * 2 + 120 * 1 = 320
     fee_detail = valid_order.calculate_fee_detail(product_map)

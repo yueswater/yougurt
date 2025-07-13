@@ -44,15 +44,14 @@ class MemberService:
         return self.repo.is_valid_member(line_id)
 
     def update_fields_by_line_id(self, line_id: str, updates: dict) -> Member:
-        # 找出舊的會員資料
+        # Find out old membership profiles
         member = self.repo.get_by_line_id(line_id)
         if not member:
             raise ValueError(f"找不到 line_id={line_id} 的會員")
 
-        # 把 dataclass 轉成 dict 好處理
+        # Convert dataclass to dict to handle
         member_data = asdict(member)
 
-        # 過濾只能更新的欄位（避免改到 member_id、create_at 這種不該動的欄位）
         updatable_fields = {
             "member_name",
             "phone",
@@ -69,10 +68,10 @@ class MemberService:
             if field in updatable_fields:
                 member_data[field] = value
 
-        # 轉回 Member 實體
+        # Return to Member
         updated_member = Member.from_dict(member_data)
 
-        # 更新到 repo
+        # Update to repo
         self.repo.update(updated_member)
 
         return updated_member

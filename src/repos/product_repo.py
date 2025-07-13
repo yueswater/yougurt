@@ -1,4 +1,3 @@
-# src/repos/product_repo.py
 from abc import ABC, abstractmethod
 from typing import List, Optional
 
@@ -33,6 +32,7 @@ class GoogleSheetProductRepository(ProductRepository):
                 "product_id": row["Product ID"],
                 "product_name": row["Product Name"],
                 "price": row["Price"],
+                "category": row["Category"],
             }
             products.append(Product.from_dict(data))
         return products
