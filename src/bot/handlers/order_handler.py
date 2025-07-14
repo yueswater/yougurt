@@ -67,12 +67,12 @@ def handle_waiting_address(line_id: str, text: str) -> FlexSendMessage:
                     ButtonComponent(
                         style="primary",
                         color="#00C851",
-                        action=MessageAction(label="是", text="地址正確"),
+                        action=MessageAction(label="正確", text="正確"),
                     ),
                     ButtonComponent(
-                        style="secondary",
+                        style="primary",
                         color="#ff4444",
-                        action=MessageAction(label="否", text="地址錯誤"),
+                        action=MessageAction(label="重新修正", text="重新修正"),
                     ),
                 ],
             ),
@@ -83,12 +83,12 @@ def handle_waiting_address(line_id: str, text: str) -> FlexSendMessage:
 def handle_confirm_address(
     line_id: str, text: str
 ) -> FlexSendMessage | TextSendMessage:
-    if text == "地址正確":
+    if text == "正確":
         order_session.set_field(line_id, "step", "waiting_orders")
         # 直接呼叫 handle_waiting_orders，讓使用者馬上看到分類字卡
         return handle_waiting_orders(line_id, text="")
 
-    elif text == "地址錯誤":
+    elif text == "重新修正":
         order_session.set_field(line_id, "step", "waiting_address")
         return TextSendMessage(text="請重新輸入正確的收件地址")
 
@@ -132,7 +132,7 @@ def handle_selected_category(
 ) -> Union[TextSendMessage, List[FlexSendMessage]]:
     # 擷取分類名稱
     if not text.startswith("分類："):
-        return TextSendMessage(text="⚠️ 請從列表中選擇商品分類")
+        return TextSendMessage(text="請從列表中選擇商品分類")
 
     selected_category = text.replace("分類：", "").strip()
     order_session.set_field(line_id, "step", "waiting_product")
@@ -191,7 +191,7 @@ def handle_selected_category(
                         text=f"是否完成『{selected_category}』的選購？", weight="bold", size="md"
                     ),
                     TextComponent(
-                        text="您可以繼續選購商品，或點選「是」完成此分類選購",
+                        text="您可以繼續選購商品，最後再點選「完成」來完成此分類選購",
                         wrap=True,
                         margin="md",
                         size="sm",
@@ -206,7 +206,9 @@ def handle_selected_category(
                     ButtonComponent(
                         style="primary",
                         color="#00C851",
-                        action=MessageAction(label="是", text=f"完成：{selected_category}"),
+                        action=MessageAction(
+                            label="完成選購", text=f"完成：{selected_category}"
+                        ),
                     ),
                 ],
             ),
@@ -238,7 +240,7 @@ def handle_select_quantity(line_id: str, text: str) -> TextSendMessage:
         order_session.set_field(line_id, "current_product", None)
 
         return TextSendMessage(
-            text=f"✅ 已將「{current_product}」{quantity}瓶加入訂單。\n您可以繼續選擇其他商品，或點擊上方按鈕【是】來完成此類別選購。"
+            text=f"✅ 已將「{current_product}」{quantity}瓶加入訂單。\n\n您可以繼續選擇其他商品，或點擊上方按鈕【完成】來完成此類別選購。"
         )
     except Exception:
         return TextSendMessage(text="⚠️ 請輸入正確的數量（1～99）")
@@ -322,11 +324,12 @@ def handle_finish_category(
                 spacing="md",
                 contents=[
                     ButtonComponent(
-                        style="primary", action=MessageAction(label="是", text="繼續選購")
+                        style="primary",
+                        action=MessageAction(label="完成商品選購", text="完成所有商品選購"),
                     ),
                     ButtonComponent(
                         style="secondary",
-                        action=MessageAction(label="否", text="完成所有商品選購"),
+                        action=MessageAction(label="繼續選購", text="繼續選購"),
                     ),
                 ],
             ),
