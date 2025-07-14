@@ -220,6 +220,10 @@ def handle_select_quantity(line_id: str, text: str) -> TextSendMessage:
     state = order_session.get_session(line_id)
     current_product = state.get("current_product")
 
+    # 防止使用者未先點選商品就直接輸入數字
+    if not current_product:
+        return TextSendMessage(text="⚠️ 請先選擇要訂購的商品，再輸入數量")
+
     try:
         quantity = int(text)
         if not (1 <= quantity <= 99):
@@ -230,9 +234,11 @@ def handle_select_quantity(line_id: str, text: str) -> TextSendMessage:
         current_orders[current_product] = quantity
         order_session.set_field(line_id, "orders", current_orders)
 
-        # step 保持在 waiting_product
+        # 清除 current_product，避免錯誤重複輸入
+        order_session.set_field(line_id, "current_product", None)
+
         return TextSendMessage(
-            text=f"已將「{current_product}」{quantity}瓶加入訂單。\n您可以繼續選擇其他商品，或點擊上方按鈕【是】來完成此類別選購。"
+            text=f"✅ 已將「{current_product}」{quantity}瓶加入訂單。\n您可以繼續選擇其他商品，或點擊上方按鈕【是】來完成此類別選購。"
         )
     except Exception:
         return TextSendMessage(text="⚠️ 請輸入正確的數量（1～99）")
@@ -245,15 +251,22 @@ def handle_finish_category(
         return TextSendMessage(text="請從選單中點選完成按鈕")
 
     text.replace("完成：", "").strip()
-    order_session.set_field(line_id, "step", "waiting_finish_category")
 
     # 取得已訂購項目
     state = order_session.get_session(line_id)
     orders = state.get("orders", {})
-    if not orders:
-        return TextSendMessage(text="目前尚未有任何訂購商品。")
 
-    # 建立商品清單與計算總價
+    if not orders:
+        # 沒有訂購商品 → 回到商品類別選單
+        order_session.set_field(line_id, "step", "waiting_orders")
+        return [
+            TextSendMessage(text="⚠️ 目前尚未有任何訂購商品，請先選擇商品進行訂購。"),
+            handle_waiting_orders(line_id, ""),
+        ]
+
+    # 有商品 → 顯示結算與是否加購
+    order_session.set_field(line_id, "step", "waiting_finish_category")
+
     product_list = product_repo.get_all()
     product_map = {p.product_name: p for p in product_list}
 
@@ -527,7 +540,7 @@ def handle_waiting_confirm(
 
     else:
         order_session.clear_session(line_id)
-        return TextSendMessage(text="輸入錯誤，請重新按下「優格訂購」")
+        return TextSendMessage(text="輸入錯誤，請重新按下【預約訂購】")
 
 
 def handle_order_step(
@@ -562,14 +575,14 @@ def handle_order_step(
         elif text == "繼續選購":
             return handle_waiting_orders(line_id, "")
         else:
-            return TextSendMessage(text="請點選「完成所有商品選購」或「繼續選購」")
+            return TextSendMessage(text="請點選「是」來繼續選購或點選「否」來完成所有商品選購")
     elif step == "waiting_desired_date":
         return handle_waiting_desired_date(line_id)
     elif step == "waiting_confirm":
         return handle_waiting_confirm(line_id, text, line_bot_api)
     else:
         order_session.clear_session(line_id)
-        return TextSendMessage(text="訂單流程異常，請輸入「開始訂購」重新開始")
+        return TextSendMessage(text="訂單流程異常，請輸入【預約訂購】重新開始")
 
 
 def initiate_order(line_id: str) -> TextSendMessage:
