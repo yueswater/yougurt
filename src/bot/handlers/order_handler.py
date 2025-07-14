@@ -52,11 +52,13 @@ def handle_waiting_address(line_id: str, text: str) -> FlexSendMessage:
             body=BoxComponent(
                 layout="vertical",
                 contents=[
-                    TextComponent(text="請確認您的收件地址是否正確", weight="bold", size="lg"),
+                    TextComponent(text="收件地址確認", weight="bold", size="lg"),
                     SeparatorComponent(margin="md"),
-                    TextComponent(text=f"地址：{text}", wrap=True, margin="md"),
                     TextComponent(
-                        text="請點選下方按鈕確認：", margin="md", size="sm", color="#888888"
+                        text=f"地址：{text}", wrap=True, margin="md", weight="bold"
+                    ),
+                    TextComponent(
+                        text="請確認您的收件地址是否正確", margin="md", size="sm", color="#888888"
                     ),
                 ],
             ),
@@ -72,7 +74,7 @@ def handle_waiting_address(line_id: str, text: str) -> FlexSendMessage:
                     ButtonComponent(
                         style="primary",
                         color="#ff4444",
-                        action=MessageAction(label="重新修正", text="重新修正"),
+                        action=MessageAction(label="錯誤", text="錯誤"),
                     ),
                 ],
             ),
@@ -88,11 +90,11 @@ def handle_confirm_address(
         # 直接呼叫 handle_waiting_orders，讓使用者馬上看到分類字卡
         return handle_waiting_orders(line_id, text="")
 
-    elif text == "重新修正":
+    elif text == "錯誤":
         order_session.set_field(line_id, "step", "waiting_address")
         return TextSendMessage(text="請重新輸入正確的收件地址")
 
-    return TextSendMessage(text="請點選「是」或「否」來確認地址")
+    return TextSendMessage(text="請點選【正確】來確認地址，或點選【錯誤】來重新修正")
 
 
 def handle_waiting_orders(line_id: str, text: str) -> FlexSendMessage:
@@ -240,7 +242,7 @@ def handle_select_quantity(line_id: str, text: str) -> TextSendMessage:
         order_session.set_field(line_id, "current_product", None)
 
         return TextSendMessage(
-            text=f"✅ 已將「{current_product}」{quantity}瓶加入訂單。\n\n您可以繼續選擇其他商品，或點擊上方按鈕【完成】來完成此類別選購。"
+            text=f"✅ 已將「{current_product}」{quantity}瓶加入訂購。\n\n您可以繼續選擇其他商品，或點擊上方按鈕【完成選購】來完成此類別選購。"
         )
     except Exception:
         return TextSendMessage(text="⚠️ 請輸入正確的數量（1～99）")
