@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime, timedelta
+from typing import List, Union
 
 from linebot import LineBotApi
 from linebot.models import (
@@ -7,6 +8,7 @@ from linebot.models import (
     BubbleContainer,
     ButtonComponent,
     ButtonsTemplate,
+    CarouselContainer,
     DatetimePickerTemplateAction,
     FlexSendMessage,
     MessageAction,
@@ -16,7 +18,6 @@ from linebot.models import (
     TextSendMessage,
 )
 
-from src.bot.utils.order_utils import parse_order_items
 from src.core.session.order_session_store import OrderSessionStore
 from src.repos.member_repo import GoogleSheetMemberRepository
 from src.repos.order_repo import GoogleSheetOrderRepository
@@ -41,23 +42,246 @@ def handle_waiting_recipient(line_id: str, text: str) -> TextSendMessage:
     return TextSendMessage(text="請輸入收件人地址")
 
 
-def handle_waiting_address(line_id: str, text: str) -> TextSendMessage:
+def handle_waiting_address(line_id: str, text: str) -> FlexSendMessage:
     order_session.set_field(line_id, "address", text)
-    order_session.set_field(line_id, "step", "waiting_orders")
-    return TextSendMessage(text="請輸入「完整」商品名稱與數量，並在不同品項間換行（如下）：\n\n牛奶希臘優格 1\n蜂蜜脆片希臘優格 2")
+    order_session.set_field(line_id, "step", "confirm_address")
+
+    return FlexSendMessage(
+        alt_text="地址確認",
+        contents=BubbleContainer(
+            body=BoxComponent(
+                layout="vertical",
+                contents=[
+                    TextComponent(text="請確認您的收件地址是否正確", weight="bold", size="lg"),
+                    SeparatorComponent(margin="md"),
+                    TextComponent(text=f"地址：{text}", wrap=True, margin="md"),
+                    TextComponent(
+                        text="請點選下方按鈕確認：", margin="md", size="sm", color="#888888"
+                    ),
+                ],
+            ),
+            footer=BoxComponent(
+                layout="horizontal",
+                spacing="md",
+                contents=[
+                    ButtonComponent(
+                        style="primary",
+                        color="#00C851",
+                        action=MessageAction(label="是", text="地址正確"),
+                    ),
+                    ButtonComponent(
+                        style="secondary",
+                        color="#ff4444",
+                        action=MessageAction(label="否", text="地址錯誤"),
+                    ),
+                ],
+            ),
+        ),
+    )
 
 
-def handle_waiting_orders(line_id: str, text: str) -> TemplateSendMessage:
+def handle_confirm_address(
+    line_id: str, text: str
+) -> FlexSendMessage | TextSendMessage:
+    if text == "地址正確":
+        order_session.set_field(line_id, "step", "waiting_orders")
+        # 直接呼叫 handle_waiting_orders，讓使用者馬上看到分類字卡
+        return handle_waiting_orders(line_id, text="")
+
+    elif text == "地址錯誤":
+        order_session.set_field(line_id, "step", "waiting_address")
+        return TextSendMessage(text="請重新輸入正確的收件地址")
+
+    return TextSendMessage(text="請點選「是」或「否」來確認地址")
+
+
+def handle_waiting_orders(line_id: str, text: str) -> FlexSendMessage:
+    products = product_repo.get_all()
+    categories = sorted({p.category for p in products if p.category})  # 去除 None 與重複
+
+    # 存分類到 session，後續使用
+    order_session.set_field(line_id, "step", "waiting_category")
+
+    # 為每個分類建立按鈕
+    buttons = [
+        ButtonComponent(
+            action=MessageAction(label=category, text=f"分類：{category}"),
+            style="primary",
+            margin="sm",
+        )
+        for category in categories
+    ]
+
+    # 建立 Flex 訊息
+    category_bubble = BubbleContainer(
+        body=BoxComponent(
+            layout="vertical",
+            contents=[
+                TextComponent(text="請選擇您要訂購的商品類別", weight="bold", size="md"),
+                SeparatorComponent(margin="md"),
+                *buttons,
+            ],
+        )
+    )
+
+    return FlexSendMessage(alt_text="選擇商品類別", contents=category_bubble)
+
+
+def handle_selected_category(
+    line_id: str, text: str
+) -> Union[TextSendMessage, List[FlexSendMessage]]:
+    # 擷取分類名稱
+    if not text.startswith("分類："):
+        return TextSendMessage(text="⚠️ 請從列表中選擇商品分類")
+
+    selected_category = text.replace("分類：", "").strip()
+    order_session.set_field(line_id, "step", "waiting_product")
+    order_session.set_field(line_id, "current_category", selected_category)
+
+    # 取得該分類下的所有商品
+    products = [p for p in product_repo.get_all() if p.category == selected_category]
+
+    # 若無產品，回傳提醒
+    if not products:
+        return TextSendMessage(text=f"⚠️『{selected_category}』目前無可訂購商品，請選擇其他分類")
+
+    # 為每個產品建立 bubble
+    bubbles = []
+    for product in products:
+        bubble = BubbleContainer(
+            body=BoxComponent(
+                layout="vertical",
+                contents=[
+                    TextComponent(text=product.product_name, weight="bold", size="lg"),
+                    TextComponent(text=f"價格：${product.price}", margin="md"),
+                    SeparatorComponent(margin="md"),
+                    TextComponent(
+                        text="點選下方加入訂購", size="sm", color="#888888", margin="md"
+                    ),
+                ],
+            ),
+            footer=BoxComponent(
+                layout="vertical",
+                contents=[
+                    ButtonComponent(
+                        style="primary",
+                        action=MessageAction(
+                            label="加入訂購", text=f"加入：{product.product_name}"
+                        ),
+                    )
+                ],
+            ),
+        )
+        bubbles.append(bubble)
+
+    # 商品輪播訊息
+    carousel_message = FlexSendMessage(
+        alt_text=f"{selected_category} 商品選單",
+        contents=CarouselContainer(contents=bubbles),
+    )
+
+    # 獨立的完成確認字卡
+    confirm_message = FlexSendMessage(
+        alt_text="完成此分類選購？",
+        contents=BubbleContainer(
+            body=BoxComponent(
+                layout="vertical",
+                contents=[
+                    TextComponent(
+                        text=f"是否完成『{selected_category}』的選購？", weight="bold", size="md"
+                    ),
+                    TextComponent(
+                        text="您可以繼續選購商品或點選「是」完成此分類選購",
+                        wrap=True,
+                        margin="md",
+                        size="sm",
+                        color="#888888",
+                    ),
+                ],
+            ),
+            footer=BoxComponent(
+                layout="horizontal",
+                spacing="md",
+                contents=[
+                    ButtonComponent(
+                        style="primary",
+                        color="#00C851",
+                        action=MessageAction(label="是", text=f"完成：{selected_category}"),
+                    ),
+                    ButtonComponent(
+                        style="secondary",
+                        color="#ff4444",
+                        action=MessageAction(label="否", text="繼續選購"),
+                    ),
+                ],
+            ),
+        ),
+    )
+
+    return [carousel_message, confirm_message]
+
+
+def handle_select_quantity(line_id: str, text: str) -> TextSendMessage:
+    state = order_session.get_session(line_id)
+    current_product = state.get("current_product")
+
     try:
-        order_items = parse_order_items(text)
-        order_session.set_field(line_id, "orders", order_items)
-        order_session.set_field(line_id, "step", "waiting_desired_date")
+        quantity = int(text)
+        if not (1 <= quantity <= 99):
+            raise ValueError("超出數量範圍")
 
-        return handle_waiting_desired_date(line_id)  # ✅ 直接 return 日期選擇器
+        # 儲存到訂單暫存
+        current_orders = state.get("orders", {})
+        current_orders[current_product] = quantity
+        order_session.set_field(line_id, "orders", current_orders)
 
-    except Exception as e:
-        logging.warning("商品解析錯誤：%s", str(e))
-        return TextSendMessage(text="格式錯誤，請重新輸入。")
+        # step 保持在 waiting_product
+        return TextSendMessage(
+            text=f"✅ 已將「{current_product}」{quantity}瓶加入訂單。\n您可以繼續選擇其他商品，或點擊下方按鈕完成此類別選購。"
+        )
+    except Exception:
+        return TextSendMessage(text="⚠️ 請輸入正確的數量（1～99）")
+
+
+def handle_finish_category(
+    line_id: str, text: str
+) -> TextSendMessage | FlexSendMessage:
+    # 解析目前分類
+    if not text.startswith("完成："):
+        return TextSendMessage(text="請從選單中點選完成按鈕")
+
+    finished_category = text.replace("完成：", "").strip()
+
+    # 可以先記錄該分類已完成
+    order_session.set_field(line_id, "step", "waiting_finish_category")
+
+    return FlexSendMessage(
+        alt_text="是否要繼續訂購其他類別商品？",
+        contents=BubbleContainer(
+            body=BoxComponent(
+                layout="vertical",
+                contents=[
+                    TextComponent(
+                        text=f"已完成『{finished_category}』的選購 ✅", weight="bold", size="lg"
+                    ),
+                    TextComponent(text="請問是否還要訂購其他類別的商品？", margin="md"),
+                ],
+            ),
+            footer=BoxComponent(
+                layout="horizontal",
+                spacing="md",
+                contents=[
+                    ButtonComponent(
+                        style="primary", action=MessageAction(label="是", text="繼續選購")
+                    ),
+                    ButtonComponent(
+                        style="secondary",
+                        action=MessageAction(label="否", text="完成所有商品選購"),
+                    ),
+                ],
+            ),
+        ),
+    )
 
 
 def handle_selected_date(line_id: str, date_str: str) -> FlexSendMessage:
@@ -246,15 +470,37 @@ def handle_waiting_confirm(
 
 def handle_order_step(
     line_id: str, text: str, line_bot_api: LineBotApi
-) -> TextSendMessage:
+) -> TextSendMessage | FlexSendMessage:
     step = order_session.get_session(line_id).get("step")
+
+    print(f"[DEBUG] step: {step}, text: {text}")  # 可協助除錯
 
     if step == "waiting_recipient":
         return handle_waiting_recipient(line_id, text)
     elif step == "waiting_address":
         return handle_waiting_address(line_id, text)
+    elif step == "confirm_address":
+        return handle_confirm_address(line_id, text)
     elif step == "waiting_orders":
         return handle_waiting_orders(line_id, text)
+    elif step == "waiting_category":
+        return handle_selected_category(line_id, text)
+    elif step == "waiting_product":
+        if text.startswith("加入："):
+            current_product = text.replace("加入：", "").strip()
+            order_session.set_field(line_id, "current_product", current_product)
+            return TextSendMessage(text=f"請輸入『{current_product}』的訂購數量（1～99）")
+        elif text.startswith("完成："):
+            return handle_finish_category(line_id, text)
+        else:
+            return handle_select_quantity(line_id, text)
+    elif step == "waiting_finish_category":
+        if text == "完成所有商品選購":
+            return handle_waiting_desired_date(line_id)
+        elif text == "繼續選購":
+            return handle_waiting_orders(line_id, "")
+        else:
+            return TextSendMessage(text="請點選「完成所有商品選購」或「繼續選購」")
     elif step == "waiting_desired_date":
         return handle_waiting_desired_date(line_id)
     elif step == "waiting_confirm":
@@ -265,12 +511,6 @@ def handle_order_step(
 
 
 def initiate_order(line_id: str) -> TextSendMessage:
-    # if not member_service.exists(line_id):
-    #     return TextSendMessage(text="您尚未綁定會員，請先綁定會員後再下單。")
-
-    # if not member_service.check_valid_member(line_id):
-    #     return TextSendMessage(text="您尚未完成付款，請先付款後等待審核完成。")
-
     order_session.start_session(line_id)
     return TextSendMessage(text="請輸入收件人姓名")
 
