@@ -36,8 +36,8 @@ def handle_annual_purchase_start(line_id: str):
             text="📢 請匯款至以下帳戶：\n\n台灣銀行（代碼 004）\n帳號：123-456-789-012\n戶名：優格好好"
         ),
         ImageSendMessage(
-            original_content_url="https://example.com/bank_info.jpg",
-            preview_image_url="https://example.com/bank_info.jpg",
+            original_content_url=constants.URL.get("BANK_QRCODE", ""),
+            preview_image_url=constants.URL.get("BANK_QRCODE", ""),
         ),
         TextSendMessage(text="⚠️ 匯款完成後，請輸入您帳戶的末五碼，以便我們進行核對："),
     ]

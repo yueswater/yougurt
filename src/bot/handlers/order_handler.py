@@ -327,7 +327,7 @@ def handle_finish_category(
                 contents=[
                     ButtonComponent(
                         style="primary",
-                        action=MessageAction(label="完成商品選購", text="完成所有商品選購"),
+                        action=MessageAction(label="完成商品選購", text="完成商品選購"),
                     ),
                     ButtonComponent(
                         style="secondary",
@@ -436,7 +436,15 @@ def handle_waiting_desired_date(line_id: str) -> TemplateSendMessage:
 def handle_waiting_confirm(
     line_id: str, answer: str, line_bot_api: LineBotApi
 ) -> TextSendMessage:
-    order_session.set_field(line_id, "step", "waiting_confirm")
+    session = order_session.get_session(line_id)  # ✅ 一開始就要寫
+    # ⛔ 若未選擇日期就點選「是」，提示並重新要求選擇日期
+    if session.get("desired_date") is None:
+        order_session.set_field(line_id, "step", "waiting_desired_date")
+        return [
+            TextSendMessage(text="⚠️ 尚未選擇期望配送日期，請使用下方按鈕重新選擇："),
+            handle_waiting_desired_date(line_id),
+        ]
+
     if answer == "是":
         try:
             session = order_session.get_session(line_id)
@@ -575,12 +583,12 @@ def handle_order_step(
         else:
             return handle_select_quantity(line_id, text)
     elif step == "waiting_finish_category":
-        if text == "完成所有商品選購":
+        if text == "完成商品選購":
             return handle_waiting_desired_date(line_id)
         elif text == "繼續選購":
             return handle_waiting_orders(line_id, "")
         else:
-            return TextSendMessage(text="請點選「是」來繼續選購或點選「否」來完成所有商品選購")
+            return TextSendMessage(text="請點選【完成商品選購】來完成所有商品選購，或是點選【繼續選購】來繼續選購商品")
     elif step == "waiting_desired_date":
         return handle_waiting_desired_date(line_id)
     elif step == "waiting_confirm":
