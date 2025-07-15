@@ -62,12 +62,12 @@ def handle_waiting_phone(line_id: str, phone: str) -> FlexSendMessage:
                     ButtonComponent(
                         style="primary",
                         color="#00C851",
-                        action=MessageAction(label="是", text="是"),
+                        action=MessageAction(label="正確", text="正確"),
                     ),
                     ButtonComponent(
                         style="primary",
                         color="#ff4444",
-                        action=MessageAction(label="否", text="否"),
+                        action=MessageAction(label="重新修正", text="重新修正"),
                     ),
                 ],
             ),
@@ -80,7 +80,7 @@ def handle_waiting_confirm(
 ) -> TextSendMessage:
     state = binding_session.get_session(line_id)
 
-    if answer == "是":
+    if answer == "正確":
         name = state.get("name")
         phone = state.get("phone")
 
@@ -104,7 +104,7 @@ def handle_waiting_confirm(
         except Exception:
             logging.exception("會員建立失敗")
             return TextSendMessage(text="資料儲存失敗，請稍後再試")
-    elif answer == "否":
+    elif answer == "重新修正":
         binding_session.start_session(line_id)
         return TextSendMessage(text="請重新輸入您的本名")
     else:

@@ -441,7 +441,7 @@ def handle_waiting_confirm(
     if session.get("desired_date") is None:
         order_session.set_field(line_id, "step", "waiting_desired_date")
         return [
-            TextSendMessage(text="⚠️ 尚未選擇期望配送日期，請使用下方按鈕重新選擇："),
+            TextSendMessage(text="⚠️ 尚未選擇期望配送日期，請在下方重新選擇："),
             handle_waiting_desired_date(line_id),
         ]
 
