@@ -552,8 +552,7 @@ def handle_waiting_confirm(
         ]
 
     else:
-        order_session.clear_session(line_id)
-        return TextSendMessage(text="輸入錯誤，請重新按下【預約訂購】")
+        return TextSendMessage(text="請點選上方的【是】或【否】按鈕以完成確認")
 
 
 def handle_order_step(
