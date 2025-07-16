@@ -93,7 +93,11 @@ def handle_waiting_purchase_confirm(line_id: str, answer: str):
         bank_account = purchase_session.get_session(line_id).get("bank_account")
         try:
             member_service.update_fields_by_line_id(
-                line_id=line_id, updates={"bank_account": bank_account}
+                line_id=line_id,
+                updates={
+                    "bank_account": bank_account,
+                    "payment_status": "UNPAID",  # 新增這一行
+                },
             )
             purchase_session.clear_session(line_id)
             return TextSendMessage(text=constants.Message.get("PURCHASE", ""))
