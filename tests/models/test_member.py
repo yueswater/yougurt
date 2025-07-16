@@ -22,7 +22,7 @@ def test_member_negative_remain_delivery():
             order_type="once",
             remain_delivery=-1,
             remain_volume=1,
-            payment_stauts=PaymentStatus.UNPAID,
+            payment_status=PaymentStatus.UNPAID,
             prepaid=0,
             valid_member=False,
         )
@@ -40,7 +40,7 @@ def test_member_negative_prepaid():
             order_type="once",
             remain_delivery=0,
             remain_volume=1,
-            payment_stauts=PaymentStatus.UNPAID,
+            payment_status=PaymentStatus.UNPAID,
             prepaid=-500,
             valid_member=False,
         )

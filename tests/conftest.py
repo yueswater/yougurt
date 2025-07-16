@@ -18,7 +18,7 @@ def valid_member():
         order_type="monthly",
         remain_delivery=4,
         remain_volume=12,
-        payment_stauts=PaymentStatus.UNPAID,
+        payment_status=PaymentStatus.UNPAID,
         prepaid=1000,
         valid_member=False,
     )

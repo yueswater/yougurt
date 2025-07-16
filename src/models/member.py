@@ -23,7 +23,7 @@ class Member:
     order_type: str
     remain_delivery: int
     remain_volume: int
-    payment_stauts: PaymentStatus
+    payment_status: PaymentStatus
     prepaid: int = 0
     valid_member: bool = False
     bank_account: str = ""
@@ -55,7 +55,7 @@ class Member:
             "order_type": self.order_type,
             "remain_delivery": self.remain_delivery,
             "remain_volume": self.remain_volume,
-            "payment_status": self.payment_stauts.name if self.payment_stauts else None,
+            "payment_status": self.payment_status.name if self.payment_status else None,
             "prepaid": self.prepaid,
             "valid_member": self.valid_member,
             "bank_account": self.bank_account,
