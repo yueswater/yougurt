@@ -30,6 +30,12 @@ class Member:
 
     @classmethod
     def from_dict(cls, data: Dict) -> "Member":
+        raw_status = data["payment_status"]
+        payment_status = (
+            PaymentStatus[raw_status]
+            if isinstance(raw_status, str)
+            else PaymentStatus(raw_status)
+        )
         return cls(
             member_id=format_uuid(data["member_id"]),
             line_id=data["line_id"],
@@ -39,7 +45,7 @@ class Member:
             order_type=data["order_type"],
             remain_delivery=data["remain_delivery"],
             remain_volume=data["remain_volume"],
-            payment_status=PaymentStatus[data["payment_status"]],
+            payment_status=payment_status,
             prepaid=data["prepaid"],
             valid_member=data["valid_member"],
             bank_account=data["bank_account"],
