@@ -33,6 +33,7 @@ class GoogleSheetProductRepository(ProductRepository):
                 "product_name": row["Product Name"],
                 "price": row["Price"],
                 "category": row["Category"],
+                "available": row["Available"],
             }
             products.append(Product.from_dict(data))
         return products
@@ -42,3 +43,7 @@ class GoogleSheetProductRepository(ProductRepository):
 
     def get_by_name(self, product_name: str) -> Optional[Product]:
         return next((p for p in self.get_all() if p.product_name == product_name), None)
+
+    def is_available(self, product_id: str) -> Optional[bool]:
+        product = self.get_by_id(product_id)
+        return product.available if product else None

@@ -1,3 +1,4 @@
+import logging
 from abc import ABC, abstractmethod
 from typing import List, Optional, Union
 from uuid import UUID
@@ -46,6 +47,7 @@ class GoogleSheetMemberRepository(MemberRepository):
             data["order_type"],
             data["remain_delivery"],
             data["remain_volume"],
+            data["payment_status"],
             data["prepaid"],
             data["valid_member"],
             data["bank_account"],
@@ -67,6 +69,7 @@ class GoogleSheetMemberRepository(MemberRepository):
                 "order_type": row["Order Type"],
                 "remain_delivery": row["Remain Delivery"],
                 "remain_volume": row["Remain Volume"],
+                "payment_status": row["Payment Status"],
                 "prepaid": row["Prepaid"],
                 "valid_member": row["Valid Member"],
                 "bank_account": row["Bank Account"],
@@ -79,6 +82,14 @@ class GoogleSheetMemberRepository(MemberRepository):
 
     def get_by_line_id(self, line_id: str) -> Optional[Member]:
         return next((m for m in self.get_all() if m.line_id == line_id), None)
+
+    def get_remain_delivery_by_id(self, member_id: Union[str, UUID]) -> Optional[int]:
+        try:
+            member = self.get_by_member_id(member_id=member_id)
+            remain_delivery = member.remain_delivery
+            return remain_delivery
+        except ValueError as ve:
+            logging.error(f"Cannot find member={member_id}: {ve}")
 
     def exists(self, line_id: str) -> bool:
         return any(m.line_id == line_id for m in self.get_all())
@@ -114,6 +125,7 @@ class GoogleSheetMemberRepository(MemberRepository):
             data["order_type"],
             data["remain_delivery"],
             data["remain_volume"],
+            data["payment_status"],
             data["prepaid"],
             data["valid_member"],
             data["bank_account"],

@@ -3,7 +3,7 @@ from uuid import uuid4
 
 import pytest
 
-from src.models.member import Member
+from src.models.member import Member, PaymentStatus
 
 
 def test_member_valid_data(valid_member):
@@ -22,6 +22,7 @@ def test_member_negative_remain_delivery():
             order_type="once",
             remain_delivery=-1,
             remain_volume=1,
+            payment_stauts=PaymentStatus.UNPAID,
             prepaid=0,
             valid_member=False,
         )
@@ -39,6 +40,7 @@ def test_member_negative_prepaid():
             order_type="once",
             remain_delivery=0,
             remain_volume=1,
+            payment_stauts=PaymentStatus.UNPAID,
             prepaid=-500,
             valid_member=False,
         )

@@ -41,7 +41,7 @@ fake_product_map = {
 def test_create_order():
     # Arrange
     fake_repo = FakeOrderRepo()
-    service = OrderService(repo=fake_repo)
+    service = OrderService(order_repo=fake_repo)
 
     line_id = "test-line-id"
     recipient = "王小明"
@@ -51,12 +51,14 @@ def test_create_order():
     desired_date = datetime(2025, 7, 10)
 
     # mock get_by_line_id() (You may use mock.patch in your real environment)
+    from src.repos.member_repo import GoogleSheetMemberRepository
     from src.services.member_service import MemberService
 
     class FakeMember:
         member_id = uuid4()
 
     MemberService.get_by_line_id = lambda self, line_id: FakeMember()
+    GoogleSheetMemberRepository.get_remain_delivery_by_id = lambda self, member_id: 1
 
     # Act
     order = service.create_order(

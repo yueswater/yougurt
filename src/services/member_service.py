@@ -3,7 +3,7 @@ from dataclasses import asdict, dataclass
 from datetime import datetime
 from typing import Optional
 
-from src.models.member import Member
+from src.models.member import Member, PaymentStatus
 from src.repos.member_repo import MemberRepository
 from src.services.constants import BASIC_DELIVERY, BASIC_PRICE, MONTHS
 
@@ -25,6 +25,7 @@ class MemberService:
             "order_type": "",
             "remain_delivery": BASIC_DELIVERY,
             "remain_volume": 0,
+            "payment_status": PaymentStatus.UNPAID,
             "prepaid": basic_fee,
             "display_name": display_name,
             "valid_member": False,
@@ -58,6 +59,7 @@ class MemberService:
             "order_type",
             "remain_delivery",
             "remain_volume",
+            "payment_status",
             "prepaid",
             "valid_member",
             "bank_account",

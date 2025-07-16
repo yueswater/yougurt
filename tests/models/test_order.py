@@ -40,6 +40,7 @@ def test_order_negative_total_fee():
             orders={"item": 1},
             total_fee=-10,
             tax=100,
+            delivery_fee=10,
             recipient="測試人",
             address="不良地址",
             invoice="INV-001",

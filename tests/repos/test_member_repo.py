@@ -3,7 +3,7 @@ def test_add_member_should_call_append_row():
     from unittest.mock import MagicMock
     from uuid import uuid4
 
-    from src.models.member import Member
+    from src.models.member import Member, PaymentStatus
     from src.repos.member_repo import GoogleSheetMemberRepository
 
     member = Member(
@@ -15,6 +15,7 @@ def test_add_member_should_call_append_row():
         order_type="monthly",
         remain_delivery=3,
         remain_volume=12,
+        payment_stauts=PaymentStatus.UNPAID,
         prepaid=1000,
         valid_member=False,
     )

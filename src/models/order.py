@@ -34,6 +34,7 @@ class Order:
     orders: Dict[str, int]  # Product: quantity
     tax: float
     total_fee: int
+    delivery_fee: int
     recipient: str
     address: str
     invoice: str
@@ -53,6 +54,7 @@ class Order:
             orders=data["orders"],  # dict
             total_fee=data["total_fee"],
             tax=data["tax"],
+            delivery_fee=data["delivery_fee"],
             recipient=data["recipient"],
             address=data["address"],
             invoice=data["invoice"],
@@ -79,6 +81,7 @@ class Order:
             "orders": self.orders,
             "total_fee": self.total_fee,
             "tax": self.tax,
+            "delivery_fee": self.delivery_fee,
             "recipient": self.recipient,
             "address": self.address,
             "invoice": self.invoice,

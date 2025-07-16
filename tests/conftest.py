@@ -3,7 +3,7 @@ from uuid import uuid4
 
 import pytest
 
-from src.models.member import Member
+from src.models.member import Member, PaymentStatus
 from src.models.order import DeliverStatus, Order, OrderStatus
 
 
@@ -18,6 +18,7 @@ def valid_member():
         order_type="monthly",
         remain_delivery=4,
         remain_volume=12,
+        payment_stauts=PaymentStatus.UNPAID,
         prepaid=1000,
         valid_member=False,
     )
@@ -37,6 +38,7 @@ def valid_order(valid_member):
         orders={"A": 1},
         total_fee=110,
         tax=5.28,
+        delivery_fee=10,
         recipient="測試人",
         address="somewhere",
         invoice="INV123",

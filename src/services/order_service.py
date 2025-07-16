@@ -7,6 +7,7 @@ from src.models.order import DeliverStatus, Order, OrderStatus
 from src.models.product import Product
 from src.repos.member_repo import GoogleSheetMemberRepository
 from src.repos.order_repo import OrderRepository
+from src.services.constants import BASIC_DELIVERY_FEE
 from src.services.member_service import MemberService
 
 member_repo = GoogleSheetMemberRepository()
@@ -15,7 +16,7 @@ member_service = MemberService(member_repo)
 
 @dataclass
 class OrderService:
-    repo: OrderRepository
+    order_repo: OrderRepository
 
     def create_order(
         self,
@@ -30,6 +31,9 @@ class OrderService:
         now = datetime.now()
         member_id = member_service.get_by_line_id(line_id).member_id
 
+        remain_delivery = member_repo.get_remain_delivery_by_id(member_id)
+        delivery_fee = 0 if remain_delivery > 0 else BASIC_DELIVERY_FEE
+
         order = Order(
             order_id=uuid.uuid4(),
             order_date=now,
@@ -42,6 +46,7 @@ class OrderService:
             orders=orders,
             total_fee=0,
             tax=0.0,
+            delivery_fee=delivery_fee,
             recipient=recipient,
             address=address,
             invoice="",
@@ -51,5 +56,5 @@ class OrderService:
         order.tax = fee_detail["tax_fee"]
         order.total_fee = fee_detail["total_fee"]
 
-        self.repo.add(order)
+        self.order_repo.add(order)
         return order

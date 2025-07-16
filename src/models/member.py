@@ -1,10 +1,16 @@
 from dataclasses import dataclass
 from datetime import datetime
+from enum import Enum
 from typing import Any, Dict
 from uuid import UUID
 
 from src.utils.format_datetime import format_datetime
 from src.utils.format_uuid import format_uuid
+
+
+class PaymentStatus(Enum):
+    UNPAID = 0
+    PAID = 1
 
 
 @dataclass
@@ -17,6 +23,7 @@ class Member:
     order_type: str
     remain_delivery: int
     remain_volume: int
+    payment_stauts: PaymentStatus
     prepaid: int = 0
     valid_member: bool = False
     bank_account: str = ""
@@ -32,6 +39,7 @@ class Member:
             order_type=data["order_type"],
             remain_delivery=data["remain_delivery"],
             remain_volume=data["remain_volume"],
+            payment_status=PaymentStatus[data["payment_status"]],
             prepaid=data["prepaid"],
             valid_member=data["valid_member"],
             bank_account=data["bank_account"],
@@ -47,6 +55,7 @@ class Member:
             "order_type": self.order_type,
             "remain_delivery": self.remain_delivery,
             "remain_volume": self.remain_volume,
+            "payment_status": self.payment_stauts.name if self.payment_stauts else None,
             "prepaid": self.prepaid,
             "valid_member": self.valid_member,
             "bank_account": self.bank_account,
