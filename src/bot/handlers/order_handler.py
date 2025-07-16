@@ -100,8 +100,8 @@ def handle_confirm_address(
 
 
 def handle_waiting_orders(line_id: str, text: str) -> FlexSendMessage:
-    products = product_repo.get_all()
-    categories = sorted({p.category for p in products if p.category})  # 去除 None 與重複
+    products = [p for p in product_repo.get_all() if p.available]  # ✅ 篩選可訂購商品
+    categories = sorted({p.category for p in products if p.category})
 
     # 存分類到 session，後續使用
     order_session.set_field(line_id, "step", "waiting_category")
@@ -141,7 +141,11 @@ def handle_selected_category(
     order_session.set_field(line_id, "step", "waiting_product")
     order_session.set_field(line_id, "current_category", selected_category)
 
-    products = [p for p in product_repo.get_all() if p.category == selected_category]
+    products = [
+        p
+        for p in product_repo.get_all()
+        if p.category == selected_category and p.available  # ✅ 加入 available 判斷
+    ]
 
     if not products:
         return TextSendMessage(text=f"⚠️『{selected_category}』目前無可訂購商品，請選擇其他分類")
