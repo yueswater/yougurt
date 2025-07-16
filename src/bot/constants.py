@@ -21,5 +21,40 @@ MEMBERSHIP_KEYWORDS = {
 }
 
 URL = {
-    "BANK_QRCODE": "https://github.com/yueswater/yougurt/blob/feat/mason_linebot/src/bot/images/qrcode.png?raw=true"
+    "BANK_QRCODE": (
+        "https://github.com/yueswater/yougurt/blob/feat/mason_linebot/"
+        "src/bot/images/qrcode.png?raw=true"
+    ),
+    "鮮奶希臘式濃縮優格": (
+        "https://github.com/yueswater/yougurt/blob/feat/mason_linebot/"
+        "src/bot/images/TOP%20-%20Plain.png?raw=true"
+    ),
+    "藍莓希臘式濃縮優格": (
+        "https://github.com/yueswater/yougurt/blob/feat/mason_linebot/"
+        "src/bot/images/TOP%20-%20Blueberry.png?raw=true"
+    ),
+    "蜂蜜脆片希臘式濃縮優格": (
+        "https://github.com/yueswater/yougurt/blob/feat/mason_linebot/"
+        "src/bot/images/TOP%20-%20Honey.png?raw=true"
+    ),
+    "香桔希臘式濃縮優格": (
+        "https://github.com/yueswater/yougurt/blob/feat/mason_linebot/"
+        "src/bot/images/TOP%20-%20Mango%2000.png?raw=true"
+    ),
+    "芒果希臘式濃縮優格": (
+        "https://github.com/yueswater/yougurt/blob/feat/mason_linebot/"
+        "src/bot/images/TOP%20-%20Mango.png?raw=true"
+    ),
+    "覆盆子希臘式濃縮優格": (
+        "https://github.com/yueswater/yougurt/blob/feat/mason_linebot/"
+        "src/bot/images/TOP%20-%20Raspberry.png?raw=true"
+    ),
+    "草莓希臘式濃縮優格": (
+        "https://github.com/yueswater/yougurt/blob/feat/mason_linebot/"
+        "src/bot/images/TOP%20-%20Strawberry.png?raw=true"
+    ),
+    "黑糖桂圓希臘式濃縮優格": (
+        "https://github.com/yueswater/yougurt/blob/feat/mason_linebot/"
+        "src/bot/images/TOP%20-%20brownsugar%20longan.png?raw=true"
+    ),
 }
