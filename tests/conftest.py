@@ -35,10 +35,9 @@ def valid_order(valid_member):
         payment_method="cash",
         member_id=valid_member.member_id,
         orders={"A": 1},
-        order_fee=100,
         total_fee=110,
+        tax=5.28,
         recipient="測試人",
         address="somewhere",
         invoice="INV123",
-        tax=5.3,
     )

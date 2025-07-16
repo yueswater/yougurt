@@ -40,15 +40,15 @@ class OrderService:
             payment_method=payment_method,
             member_id=member_id,
             orders=orders,
-            order_fee=0,
             total_fee=0,
+            tax=0.0,
             recipient=recipient,
             address=address,
             invoice="",
         )
 
         fee_detail = order.calculate_fee_detail(product_map)
-        order.order_fee = fee_detail["order_fee"]
+        order.tax = fee_detail["tax_fee"]
         order.total_fee = fee_detail["total_fee"]
 
         self.repo.add(order)

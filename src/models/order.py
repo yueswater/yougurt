@@ -32,13 +32,12 @@ class Order:
     payment_method: str
     member_id: UUID
     orders: Dict[str, int]  # Product: quantity
-    order_fee: int
+    tax: float
     total_fee: int
     recipient: str
     address: str
     invoice: str
     order_date: datetime = field(default_factory=datetime.now)
-    tax: float = TAX_RATE
 
     @classmethod
     def from_dict(cls, data: Dict) -> "Order":
@@ -52,12 +51,11 @@ class Order:
             payment_method=data["payment_method"],
             member_id=format_uuid(data["member_id"]),
             orders=data["orders"],  # dict
-            order_fee=data["order_fee"],
             total_fee=data["total_fee"],
+            tax=data["tax"],
             recipient=data["recipient"],
             address=data["address"],
             invoice=data["invoice"],
-            tax=data["tax"],
         )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -79,19 +77,18 @@ class Order:
             "payment_method": self.payment_method,
             "member_id": self.member_id,
             "orders": self.orders,
-            "order_fee": self.order_fee,
             "total_fee": self.total_fee,
+            "tax": self.tax,
             "recipient": self.recipient,
             "address": self.address,
             "invoice": self.invoice,
-            "tax": self.tax,
         }
 
     def tax_ratio(self):
         """
         Return the proportion of tax from a tax-included price
         """
-        return self.tax / (1 + self.tax)
+        return TAX_RATE / (1 + TAX_RATE)
 
     def calculate_tax_fee(self, product_map: Dict[str, Product], pid: str) -> float:
         product = product_map.get(pid)
@@ -99,16 +96,15 @@ class Order:
         return tax_fee
 
     def calculate_fee_detail(self, product_map: Dict[str, Product]) -> Dict[str, float]:
-        order_fee = 0
+        total_fee = 0
         for pid, qty in self.orders.items():
             product = product_map.get(pid)
             if not product:
                 raise ValueError(f"Product ID {pid} not found")
-            order_fee += product.price * qty  # price * quantity
+            total_fee += product.price * qty  # price * quantity
 
-        tax_fee = order_fee * self.tax_ratio()
-        total_fee = order_fee + tax_fee
-        return {"order_fee": order_fee, "tax_fee": tax_fee, "total_fee": total_fee}
+        tax_fee = total_fee * self.tax_ratio()
+        return {"tax_fee": tax_fee, "total_fee": total_fee}
 
     def get_order_items(
         self, product_map: Dict[str, Product]
@@ -147,5 +143,5 @@ class Order:
         return "未指定"
 
     def __post_init__(self):
-        if self.order_fee < 0 or self.total_fee < 0 or self.tax < 0:
-            raise ValueError("order_fee, total_fee, and tax cannot be negative")
+        if self.total_fee < 0:
+            raise ValueError("order_fee, total_fee, and tax_rate cannot be negative")

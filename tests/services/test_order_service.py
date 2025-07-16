@@ -72,9 +72,7 @@ def test_create_order():
     # Assert
     assert order.recipient == recipient
     assert order.orders == orders
-    assert (
-        order.total_fee == 100 * 2 + 200 * 1 + (100 * 2 + 200 * 1) * order.tax_ratio()
-    )
+    assert order.total_fee == 100 * 2 + 200 * 1
     assert order.confirmed_order.name == "PENDING"
     assert len(fake_repo.saved_orders) == 1
 

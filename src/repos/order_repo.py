@@ -3,6 +3,7 @@ from typing import List, Optional, Union
 from uuid import UUID
 
 from src.models.order import Order
+from src.repos.product_repo import GoogleSheetProductRepository
 from src.utils.sheet_client import get_worksheet
 
 
@@ -32,12 +33,14 @@ class GoogleSheetOrderRepository(OrderRepository):
     def __init__(self):
         super().__init__()
         self.worksheet = get_worksheet("Orders")
+        self.product_repo = GoogleSheetProductRepository()
 
     def add(self, order: Order) -> None:
         data = order.to_dict()
 
         orders_display = "、".join(
-            f"{pid} * {qty}" for pid, qty in data["orders"].items()
+            f"{self.product_repo.get_by_id(pid).product_name} * {qty}"
+            for pid, qty in data["orders"].items()
         )
 
         row = [
@@ -50,12 +53,11 @@ class GoogleSheetOrderRepository(OrderRepository):
             data["payment_method"],
             str(data["member_id"]),
             orders_display,
-            str(data["order_fee"]),
             str(data["total_fee"]),
+            str(data["tax"]),
             data["recipient"],
             data["address"],
             data["invoice"],
-            str(data["tax"]),
         ]
         self.worksheet.append_row(row)
 
@@ -78,12 +80,11 @@ class GoogleSheetOrderRepository(OrderRepository):
                     for item in row["Orders"].split("、")
                     if " * " in item
                 },
-                "order_fee": row["Order Fee"],
                 "total_fee": row["Total Fee"],
+                "tax": float(row["Tax"]),
                 "recipient": row["Recipient"],
                 "address": row["Address"],
                 "invoice": row["Invoice"],
-                "tax": float(row["Tax"]),
             }
             orders.append(Order.from_dict(data))
         return orders
@@ -119,7 +120,6 @@ class GoogleSheetOrderRepository(OrderRepository):
                     if hasattr(data["deliver_status"], "name")
                     else data["deliver_status"]
                 )
-                print("[DEBUG] 更新欄位：", data)
                 orders_display = "、".join(
                     f"{pid} * {qty}" for pid, qty in data["orders"].items()
                 )
@@ -133,13 +133,12 @@ class GoogleSheetOrderRepository(OrderRepository):
                     data["payment_method"],
                     str(data["member_id"]),
                     orders_display,
-                    str(data["order_fee"]),
                     str(data["total_fee"]),
+                    str(data["tax"]),
                     data["recipient"],
                     data["address"],
                     data["invoice"],
-                    str(data["tax"]),
                 ]
-                self.worksheet.update(f"A{idx}:O{idx}", [update_row])  # noqa: E231
+                self.worksheet.update(f"A{idx}:N{idx}", [update_row])  # noqa: E231
                 return
         raise ValueError("Order not found")

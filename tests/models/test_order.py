@@ -23,7 +23,7 @@ def test_order_calculate_total_fee(valid_order):
     valid_order.orders = {"P001": 2, "P002": 1}  # 100 * 2 + 120 * 1 = 320
     fee_detail = valid_order.calculate_fee_detail(product_map)
     total = fee_detail["total_fee"]
-    assert total == 320 + 320 * valid_order.tax_ratio()
+    assert total == 320
 
 
 def test_order_negative_total_fee():
@@ -38,11 +38,10 @@ def test_order_negative_total_fee():
             payment_method="cash",
             member_id=uuid4(),
             orders={"item": 1},
-            order_fee=200,
             total_fee=-10,
+            tax=100,
             recipient="測試人",
             address="不良地址",
             invoice="INV-001",
-            tax=5.3,
         )
     assert "total_fee" in str(exc.value)
