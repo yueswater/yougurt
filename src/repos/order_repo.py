@@ -139,6 +139,6 @@ class GoogleSheetOrderRepository(OrderRepository):
                     data["address"],
                     data["invoice"],
                 ]
-                self.worksheet.update(f"A{idx}:N{idx}", [update_row])  # noqa: E231
+                self.worksheet.update(f"A{idx}:O{idx}", [update_row])  # noqa: E231
                 return
         raise ValueError("Order not found")
