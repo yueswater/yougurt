@@ -54,7 +54,7 @@ class Order:
             orders=data["orders"],  # dict
             total_fee=data["total_fee"],
             tax=data["tax"],
-            delivery_fee=data["delivery_fee"],
+            delivery_fee=float(data.get("delivery_fee", 0)),
             recipient=data["recipient"],
             address=data["address"],
             invoice=data["invoice"],
