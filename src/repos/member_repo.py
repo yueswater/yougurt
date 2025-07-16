@@ -132,7 +132,7 @@ class GoogleSheetMemberRepository(MemberRepository):
         ]
 
         # Overwrite data
-        range_name = f"A{row_number}:K{row_number}"  # noqa: E231
+        range_name = f"A{row_number}:L{row_number}"  # noqa: E231
         self.worksheet.update(values=[new_row], range_name=range_name)
 
     def delete(self, line_id: str) -> None:
