@@ -129,10 +129,117 @@ def handle_waiting_orders(line_id: str, text: str) -> FlexSendMessage:
     return FlexSendMessage(alt_text="選擇商品類別", contents=category_bubble)
 
 
+# def handle_selected_category(
+#     line_id: str, text: str
+# ) -> Union[TextSendMessage, List[FlexSendMessage]]:
+#     # 擷取分類名稱
+#     if not text.startswith("分類："):
+#         return TextSendMessage(text="請從列表中選擇商品分類")
+
+#     selected_category = text.replace("分類：", "").strip()
+#     order_session.set_field(line_id, "step", "waiting_product")
+#     order_session.set_field(line_id, "current_category", selected_category)
+
+#     # 取得該分類下的所有商品
+#     products = [p for p in product_repo.get_all() if p.category == selected_category]
+
+#     # 若無產品，回傳提醒
+#     if not products:
+#         return TextSendMessage(text=f"⚠️『{selected_category}』目前無可訂購商品，請選擇其他分類")
+
+#     # 為每個產品建立 bubble
+#     bubbles = []
+#     for product in products:
+#         footer_buttons = [
+#             ButtonComponent(
+#                 style="primary",
+#                 action=MessageAction(
+#                     label="加入訂購", text=f"加入：{product.product_name}"
+#                 ),
+#             )
+#         ]
+
+#         if selected_category == "希臘式濃縮優格":
+#             BoxComponent(
+#                 layout="vertical",
+#                 contents=[
+#                     ButtonComponent(
+#                         style="primary",
+#                         action=MessageAction(label="加入訂購", text=f"加入：{product.product_name}"),
+#                     ),
+#                     TextComponent(text=" ", size="sm"),  # 用空白文字創造間距
+#                     ButtonComponent(
+#                         style="primary",
+#                         action=MessageAction(label="購買一盒（12入）", text=f"加入12：{product.product_name}"),
+#                     ),
+#                 ],
+#             )
+
+#         bubble = BubbleContainer(
+#             body=BoxComponent(
+#                 layout="vertical",
+#                 contents=[
+#                     TextComponent(text=product.product_name, weight="bold", size="lg"),
+#                     TextComponent(text=f"價格：${product.price}", margin="md"),
+#                     SeparatorComponent(margin="md"),
+#                     TextComponent(
+#                         text="點選下方加入訂購", size="sm", color="#888888", margin="md"
+#                     ),
+#                 ],
+#             ),
+#             footer=BoxComponent(layout="vertical", contents=footer_buttons),
+#         )
+
+#         bubbles.append(bubble)
+
+
+#     # 商品輪播訊息
+#     carousel_message = FlexSendMessage(
+#         alt_text=f"{selected_category} 商品選單",
+#         contents=CarouselContainer(contents=bubbles),
+#     )
+
+#     # 獨立的完成確認字卡（只留「是」按鈕）
+#     confirm_message = FlexSendMessage(
+#         alt_text="完成此分類選購？",
+#         contents=BubbleContainer(
+#             body=BoxComponent(
+#                 layout="vertical",
+#                 contents=[
+#                     TextComponent(
+#                         text=f"是否完成『{selected_category}』的選購？", weight="bold", size="md"
+#                     ),
+#                     TextComponent(
+#                         text="您可以繼續選購商品，最後再點選「完成」來完成此分類選購",
+#                         wrap=True,
+#                         margin="md",
+#                         size="sm",
+#                         color="#888888",
+#                     ),
+#                 ],
+#             ),
+#             footer=BoxComponent(
+#                 layout="horizontal",
+#                 spacing="md",
+#                 contents=[
+#                     ButtonComponent(
+#                         style="primary",
+#                         color="#00C851",
+#                         action=MessageAction(
+#                             label="完成選購", text=f"完成：{selected_category}"
+#                         ),
+#                     ),
+#                 ],
+#             ),
+#         ),
+#     )
+
+#     return [carousel_message, confirm_message]
+
+
 def handle_selected_category(
     line_id: str, text: str
 ) -> Union[TextSendMessage, List[FlexSendMessage]]:
-    # 擷取分類名稱
     if not text.startswith("分類："):
         return TextSendMessage(text="請從列表中選擇商品分類")
 
@@ -140,16 +247,40 @@ def handle_selected_category(
     order_session.set_field(line_id, "step", "waiting_product")
     order_session.set_field(line_id, "current_category", selected_category)
 
-    # 取得該分類下的所有商品
     products = [p for p in product_repo.get_all() if p.category == selected_category]
 
-    # 若無產品，回傳提醒
     if not products:
         return TextSendMessage(text=f"⚠️『{selected_category}』目前無可訂購商品，請選擇其他分類")
 
-    # 為每個產品建立 bubble
     bubbles = []
     for product in products:
+        # ⬇️ 如果是希臘式濃縮優格，加兩個按鈕＋margin 控制距離
+        if selected_category == "希臘式濃縮優格":
+            footer_contents = [
+                ButtonComponent(
+                    style="primary",
+                    action=MessageAction(
+                        label="加入自訂數量", text=f"加入自訂數量：{product.product_name}"
+                    ),
+                ),
+                ButtonComponent(
+                    style="primary",
+                    action=MessageAction(
+                        label="購買一盒（12入）", text=f"加入一盒：{product.product_name}"
+                    ),
+                    margin="sm",  # 👈 控制兩個按鈕之間的距離
+                ),
+            ]
+        else:
+            footer_contents = [
+                ButtonComponent(
+                    style="primary",
+                    action=MessageAction(
+                        label="加入自訂數量", text=f"加入自訂數量：{product.product_name}"
+                    ),
+                )
+            ]
+
         bubble = BubbleContainer(
             body=BoxComponent(
                 layout="vertical",
@@ -164,25 +295,16 @@ def handle_selected_category(
             ),
             footer=BoxComponent(
                 layout="vertical",
-                contents=[
-                    ButtonComponent(
-                        style="primary",
-                        action=MessageAction(
-                            label="加入訂購", text=f"加入：{product.product_name}"
-                        ),
-                    )
-                ],
+                contents=footer_contents,
             ),
         )
         bubbles.append(bubble)
 
-    # 商品輪播訊息
     carousel_message = FlexSendMessage(
         alt_text=f"{selected_category} 商品選單",
         contents=CarouselContainer(contents=bubbles),
     )
 
-    # 獨立的完成確認字卡（只留「是」按鈕）
     confirm_message = FlexSendMessage(
         alt_text="完成此分類選購？",
         contents=BubbleContainer(
@@ -377,7 +499,7 @@ def handle_selected_date(line_id: str, date_str: str) -> FlexSendMessage:
                     TextComponent(text=f"地址：{address}", wrap=True, margin="md"),
                     *order_summary_components,
                     TextComponent(
-                        text=f"期望配送日期：{desired_date}", wrap=True, margin="md"
+                        text=f"期望收貨日期：{desired_date}", wrap=True, margin="md"
                     ),
                     TextComponent(  # 🔽 額度扣除這一行
                         text=f"額度扣除：${total_price}",
@@ -415,9 +537,9 @@ def handle_waiting_desired_date(line_id: str) -> TemplateSendMessage:
     order_session.set_field(line_id, "step", "waiting_confirm")
 
     return TemplateSendMessage(
-        alt_text="請選擇期望配送日期",
+        alt_text="請選擇期望收貨日期",
         template=ButtonsTemplate(
-            title="請選擇期望配送日期",
+            title="請選擇期望收貨日期",
             text="點選下方按鈕選擇日期",
             actions=[
                 DatetimePickerTemplateAction(
@@ -441,7 +563,7 @@ def handle_waiting_confirm(
     if session.get("desired_date") is None:
         order_session.set_field(line_id, "step", "waiting_desired_date")
         return [
-            TextSendMessage(text="⚠️ 尚未選擇期望配送日期，請在下方重新選擇："),
+            TextSendMessage(text="⚠️ 尚未選擇期望收貨日期，請在下方重新選擇"),
             handle_waiting_desired_date(line_id),
         ]
 
@@ -522,7 +644,7 @@ def handle_waiting_confirm(
                             wrap=True,
                         ),
                         TextComponent(
-                            text=f"期望配送日期：{created_order.desired_date.strftime('%Y-%m-%d')}",
+                            text=f"期望收貨日期：{created_order.desired_date.strftime('%Y-%m-%d')}",
                             margin="md",
                             wrap=True,
                         ),
@@ -573,10 +695,14 @@ def handle_order_step(
     elif step == "waiting_category":
         return handle_selected_category(line_id, text)
     elif step == "waiting_product":
-        if text.startswith("加入："):
-            current_product = text.replace("加入：", "").strip()
+        if text.startswith("加入自訂數量："):
+            current_product = text.replace("加入自訂數量：", "").strip()
             order_session.set_field(line_id, "current_product", current_product)
             return TextSendMessage(text=f"請輸入『{current_product}』的訂購數量（1～99）")
+        elif text.startswith("加入一盒："):
+            current_product = text.replace("加入一盒：", "").strip()
+            order_session.set_field(line_id, "current_product", current_product)
+            return handle_select_quantity(line_id, text="12")  # 直接使用 12 當作數量
         elif text.startswith("完成："):
             return handle_finish_category(line_id, text)
         else:
