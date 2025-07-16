@@ -55,6 +55,7 @@ class GoogleSheetOrderRepository(OrderRepository):
             orders_display,
             str(data["total_fee"]),
             str(data["tax"]),
+            str(data["delivery_fee"]),
             data["recipient"],
             data["address"],
             data["invoice"],
