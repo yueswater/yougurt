@@ -39,7 +39,7 @@ URL = {
     ),
     "香桔希臘式濃縮優格": (
         "https://github.com/yueswater/yougurt/blob/feat/mason_linebot/"
-        "src/bot/images/TOP%20-%20Mango%2000.png?raw=true"
+        "src/bot/images/TOP%20-%20Orange.png?raw=true"
     ),
     "芒果希臘式濃縮優格": (
         "https://github.com/yueswater/yougurt/blob/feat/mason_linebot/"
