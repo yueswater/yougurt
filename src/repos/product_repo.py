@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from functools import cached_property
 from typing import List, Optional
 
 from src.models.product import Product
@@ -23,20 +24,23 @@ class GoogleSheetProductRepository(ProductRepository):
     def __init__(self):
         self.worksheet = get_worksheet("Products")
 
-    def get_all(self) -> List[Product]:
+    @cached_property
+    def all_products(self) -> List[Product]:
         rows = self.worksheet.get_all_records()
         products = []
-
         for row in rows:
             data = {
                 "product_id": row["Product ID"],
                 "product_name": row["Product Name"],
                 "price": row["Price"],
                 "category": row["Category"],
-                "available": row["Available"],
+                "available": self.parse_bool(row["Available"]),
             }
             products.append(Product.from_dict(data))
         return products
+
+    def get_all(self) -> List[Product]:
+        return self.all_products
 
     def get_by_id(self, product_id: str) -> Optional[Product]:
         return next((p for p in self.get_all() if p.product_id == product_id), None)
@@ -47,3 +51,7 @@ class GoogleSheetProductRepository(ProductRepository):
     def is_available(self, product_id: str) -> Optional[bool]:
         product = self.get_by_id(product_id)
         return product.available if product else None
+
+    @staticmethod
+    def parse_bool(value: str) -> bool:
+        return str(value).strip().lower() not in ("false", "0", "", "no", "n")

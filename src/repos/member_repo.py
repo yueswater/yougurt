@@ -145,4 +145,4 @@ class GoogleSheetMemberRepository(MemberRepository):
 
     @staticmethod
     def parse_bool(value: str) -> bool:
-        return str(value).strip().lower() == "true"
+        return str(value).strip().lower() not in ("false", "0", "", "no", "n")
