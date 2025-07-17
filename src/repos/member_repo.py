@@ -70,7 +70,7 @@ class GoogleSheetMemberRepository(MemberRepository):
                 "remain_delivery": row["Remain Delivery"],
                 "remain_volume": row["Remain Volume"],
                 "payment_status": row["Payment Status"],
-                "balance": row["balance"],
+                "balance": row["Balance"],
                 "valid_member": row["Valid Member"],
                 "bank_account": row["Bank Account"],
             }
