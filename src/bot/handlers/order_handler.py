@@ -26,6 +26,7 @@ from src.repos.order_repo import GoogleSheetOrderRepository
 from src.repos.product_repo import GoogleSheetProductRepository
 from src.services.member_service import MemberService
 from src.services.order_service import OrderService
+from src.utils.format_bool import format_bool
 
 order_session = OrderSessionStore()
 
@@ -100,7 +101,7 @@ def handle_confirm_address(
 
 
 def handle_waiting_orders(line_id: str, text: str) -> FlexSendMessage:
-    products = [p for p in product_repo.get_all() if p.available]  # ✅ 篩選可訂購商品
+    products = [p for p in product_repo.get_all() if format_bool(p.available)]
     categories = sorted({p.category for p in products if p.category})
 
     # 存分類到 session，後續使用
