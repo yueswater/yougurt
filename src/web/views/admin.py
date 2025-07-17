@@ -64,7 +64,7 @@ def create_member():
         order_type=form.get("order_type") or "",
         remain_delivery=int(form.get("remain_delivery") or 0),
         remain_volume=int(form.get("remain_volume") or 0),
-        prepaid=int(form.get("prepaid") or 0),
+        balance=int(form.get("balance") or 0),
         valid_member=form.get("valid_member") == "true",
         bank_account=bank_account,
     )

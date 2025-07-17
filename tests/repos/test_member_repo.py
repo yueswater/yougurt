@@ -16,7 +16,7 @@ def test_add_member_should_call_append_row():
         remain_delivery=3,
         remain_volume=12,
         payment_status=PaymentStatus.UNPAID,
-        prepaid=1000,
+        balance=1000,
         valid_member=False,
     )
 

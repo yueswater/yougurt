@@ -24,7 +24,7 @@ class Member:
     remain_delivery: int
     remain_volume: int
     payment_status: PaymentStatus
-    prepaid: int = 0
+    balance: int = 0
     valid_member: bool = False
     bank_account: str = ""
 
@@ -46,7 +46,7 @@ class Member:
             remain_delivery=data["remain_delivery"],
             remain_volume=data["remain_volume"],
             payment_status=payment_status,
-            prepaid=data["prepaid"],
+            balance=data["balance"],
             valid_member=data["valid_member"],
             bank_account=data["bank_account"],
         )
@@ -62,7 +62,7 @@ class Member:
             "remain_delivery": self.remain_delivery,
             "remain_volume": self.remain_volume,
             "payment_status": self.payment_status.name if self.payment_status else None,
-            "prepaid": self.prepaid,
+            "balance": self.balance,
             "valid_member": self.valid_member,
             "bank_account": self.bank_account,
         }
@@ -72,5 +72,5 @@ class Member:
             raise ValueError("remain_volume cannot be negative")
         if self.remain_delivery < 0:
             raise ValueError("remain_delivery cannot be negative")
-        if self.prepaid < 0:
-            raise ValueError("prepaid cannot be negative")
+        if self.balance < 0:
+            raise ValueError("balance cannot be negative")

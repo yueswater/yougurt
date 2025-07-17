@@ -48,7 +48,7 @@ class GoogleSheetMemberRepository(MemberRepository):
             data["remain_delivery"],
             data["remain_volume"],
             data["payment_status"],
-            data["prepaid"],
+            data["balance"],
             data["valid_member"],
             data["bank_account"],
         ]
@@ -70,7 +70,7 @@ class GoogleSheetMemberRepository(MemberRepository):
                 "remain_delivery": row["Remain Delivery"],
                 "remain_volume": row["Remain Volume"],
                 "payment_status": row["Payment Status"],
-                "prepaid": row["Prepaid"],
+                "balance": row["balance"],
                 "valid_member": row["Valid Member"],
                 "bank_account": row["Bank Account"],
             }
@@ -126,7 +126,7 @@ class GoogleSheetMemberRepository(MemberRepository):
             data["remain_delivery"],
             data["remain_volume"],
             data["payment_status"],
-            data["prepaid"],
+            data["balance"],
             data["valid_member"],
             data["bank_account"],
         ]

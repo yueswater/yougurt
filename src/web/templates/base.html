@@ -12,12 +12,12 @@
 
 <body class="bg-gray-50 text-gray-900">
 
-    <!-- Navbar -->
+    <!-navbar->
     <nav class="bg-white shadow-md py-4 px-6 flex items-center">
-        <!-- 左：Logo -->
+        <!--Left: Logo -->
         <div class="text-xl font-bold text-[#ACD042]">Ringo</div>
 
-        <!-- 中：Menu -->
+        <!-中： menu->
         <div class="flex-grow">
             <ul class="flex space-x-6 text-sm pl-10">
                 <li><a href="/" class="hover:text-[#92B72B]">首頁</a></li>
@@ -26,19 +26,19 @@
             </ul>
         </div>
 
-        <!-- 右：按鈕 -->
+        <!--Right: Button -->
         <div class="space-x-4">
             <a href="/login" class="text-sm hover:text-[#92B72B]">登入</a>
             <a href="/signup" class="bg-[#ACD042] text-white px-4 py-2 rounded text-sm hover:bg-[#92B72B]">註冊</a>
         </div>
     </nav>
 
-    <!-- Main Content -->
+    <!--Main Content -->
     <main class="container mx-auto px-4 py-10">
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Footer -->
+    <!--Footer -->
     <footer class="text-center text-xs text-gray-500 py-6 mt-10">
         &copy; {{ current_year }} Yougurt Company. All rights reserved.
     </footer>
