@@ -16,7 +16,7 @@ class MemberService:
         self, line_id: str, name: str, phone: str, display_name: Optional[str] = None
     ) -> Member:
         basic_fee = BASIC_PRICE * BASIC_DELIVERY * MONTHS  # 15840
-        balance = BASIC_PRICE * BASIC_DELIVERY * (MONTHS + 1)  # 17160
+        balance = BASIC_PRICE * BASIC_DELIVERY * MONTHS  # 17160
         unit_quota = BASIC_PRICE * BASIC_CUPS  # 1320
         member_data = {
             "member_id": str(uuid.uuid4()),

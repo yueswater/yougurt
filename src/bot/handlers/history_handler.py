@@ -12,9 +12,22 @@ from linebot.models import (
 )
 
 from src.core.session.history_session_store import HisotrySessionStore
+from src.models.order import DeliverStatus, OrderStatus
 from src.repos.member_repo import GoogleSheetMemberRepository
 from src.repos.order_repo import GoogleSheetOrderRepository
 from src.services.member_service import MemberService
+
+order_mapping = {
+    OrderStatus.PENDING.name: "待確認",
+    OrderStatus.CONFIRMED.name: "已確認",
+    OrderStatus.CANCELLED.name: "已取消",
+}
+
+deliver_mapping = {
+    DeliverStatus.PREPARE.name: "備貨中",
+    DeliverStatus.DELIVERING.name: "運送中",
+    DeliverStatus.DELIVERED.name: "已送達",
+}
 
 # 初始化 session store
 history_session = HisotrySessionStore()
@@ -48,12 +61,12 @@ def handle_order_history(line_id: str):
         order_id_short = str(o.order_id)[:5]
         order_date = o.order_date.strftime("%Y-%m-%d")
         confirm_status = (
-            o.confirmed_order.name
+            order_mapping.get(o.confirmed_order.name, "")
             if hasattr(o.confirmed_order, "name")
             else o.confirmed_order
         )
         deliver_status = (
-            o.deliver_status.name
+            deliver_mapping.get(o.deliver_status.name, "")
             if hasattr(o.deliver_status, "name")
             else o.deliver_status
         )
@@ -105,6 +118,9 @@ def handle_order_detail(line_id: str, order_id: str) -> FlexSendMessage:
         for name, qty in order.orders.items()
     ]
 
+    order_status = order_mapping.get(order.confirmed_order.name, "")
+    delivery_status = deliver_mapping.get(order.deliver_status.name, "")
+
     # 建立整體內容，欄位加入 margin
     contents = BubbleContainer(
         body=BoxComponent(
@@ -135,8 +151,8 @@ def handle_order_detail(line_id: str, order_id: str) -> FlexSendMessage:
                     ),
                     margin="md",
                 ),
-                TextComponent(text=f"訂單狀態：{order.confirmed_order.name}", margin="md"),
-                TextComponent(text=f"配送狀態：{order.deliver_status.name}", margin="md"),
+                TextComponent(text=f"訂單狀態：{order_status}", margin="md"),
+                TextComponent(text=f"配送狀態：{delivery_status}", margin="md"),
             ],
         )
     )
