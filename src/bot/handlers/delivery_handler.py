@@ -41,7 +41,7 @@ def handle_check_quota(line_id: str):
                         margin="md",
                     ),
                     TextComponent(
-                        text=f"餘額：${balance if balance > 0 else 0}", margin="md"
+                        text=f"點數餘額：{balance if balance > 0 else 0} 點", margin="md"
                     ),
                     TextComponent(
                         text=(

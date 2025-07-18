@@ -49,22 +49,24 @@ def handle_waiting_address(line_id: str, text: str) -> FlexSendMessage:
     order_session.set_field(line_id, "address", text)
     order_session.set_field(line_id, "step", "confirm_address")
 
+    recipient = order_session.get_field(line_id, "recipient")
+
     return FlexSendMessage(
-        alt_text="地址確認",
+        alt_text="姓名與地址確認",
         contents=BubbleContainer(
             body=BoxComponent(
                 layout="vertical",
                 contents=[
-                    TextComponent(text="收件地址確認", weight="bold", size="lg"),
+                    TextComponent(text="收件資訊確認", weight="bold", size="lg"),
                     SeparatorComponent(margin="md"),
+                    TextComponent(
+                        text=f"收件人：{recipient}", wrap=True, margin="md", weight="bold"
+                    ),
                     TextComponent(
                         text=f"地址：{text}", wrap=True, margin="md", weight="bold"
                     ),
                     TextComponent(
-                        text="請確認您的收件地址是否正確",
-                        margin="md",
-                        size="sm",
-                        color="#888888",
+                        text="請確認收件人與地址是否正確", margin="md", size="sm", color="#888888"
                     ),
                 ],
             ),
@@ -93,12 +95,12 @@ def handle_confirm_address(
 ) -> FlexSendMessage | TextSendMessage:
     if text == "正確":
         order_session.set_field(line_id, "step", "waiting_orders")
-        # 直接呼叫 handle_waiting_orders，讓使用者馬上看到分類字卡
         return handle_waiting_orders(line_id, text="")
 
     elif text == "錯誤":
-        order_session.set_field(line_id, "step", "waiting_address")
-        return TextSendMessage(text="請重新輸入正確的收件地址")
+        # 回到姓名輸入步驟
+        order_session.set_field(line_id, "step", "waiting_recipient")
+        return TextSendMessage(text="請重新輸入收件人姓名")
 
     return TextSendMessage(text="請點選【正確】來確認地址，或點選【錯誤】來重新修正")
 
@@ -184,18 +186,16 @@ def handle_selected_category(
 
         # 建立 bubble
         bubble = BubbleContainer(
-            hero=(
-                ImageComponent(
-                    url=image_url, size="md", aspect_ratio="1:1", aspect_mode="fit"
-                )
-                if image_url
-                else None
-            ),
+            hero=ImageComponent(
+                url=image_url, size="md", aspect_ratio="1:1", aspect_mode="fit"
+            )
+            if image_url
+            else None,
             body=BoxComponent(
                 layout="vertical",
                 contents=[
                     TextComponent(text=product_name, weight="bold", size="lg"),
-                    TextComponent(text=f"價格：${product.price}", margin="md"),
+                    TextComponent(text=f"點數：{product.price} 點", margin="md"),
                     SeparatorComponent(margin="md"),
                     TextComponent(
                         text="點選下方加入訂購", size="sm", color="#888888", margin="md"
@@ -221,9 +221,7 @@ def handle_selected_category(
                 layout="vertical",
                 contents=[
                     TextComponent(
-                        text=f"是否完成『{selected_category}』的選購？",
-                        weight="bold",
-                        size="md",
+                        text=f"是否完成『{selected_category}』的選購？", weight="bold", size="md"
                     ),
                     TextComponent(
                         text="您可以繼續選購商品，最後再點選「完成」來完成此分類選購",
@@ -316,7 +314,7 @@ def handle_finish_category(
             total_price += subtotal
             product_lines.append(
                 TextComponent(
-                    text=f"• {name} x {qty}瓶 = ${subtotal}",
+                    text=f"• {name} x {qty} 瓶 = {subtotal} 點",
                     size="md",
                     wrap=True,
                     margin="sm",
@@ -334,7 +332,7 @@ def handle_finish_category(
                     *product_lines,
                     SeparatorComponent(margin="md"),
                     TextComponent(
-                        text=f"總計金額：${total_price}",
+                        text=f"總計點數：{total_price} 點",
                         weight="bold",
                         size="md",
                         margin="md",
@@ -416,8 +414,8 @@ def handle_selected_date(line_id: str, date_str: str) -> FlexSendMessage:
                     TextComponent(
                         text=f"期望收貨日期：{desired_date}", wrap=True, margin="md"
                     ),
-                    TextComponent(  # 🔽 額度扣除這一行
-                        text=f"額度扣除：${total_price}",
+                    TextComponent(  # 🔽 點數扣除這一行
+                        text=f"點數扣除：{total_price} 點",
                         wrap=True,
                         margin="md",
                         weight="bold",
@@ -430,10 +428,7 @@ def handle_selected_date(line_id: str, date_str: str) -> FlexSendMessage:
                     ),
                     SeparatorComponent(margin="md"),
                     TextComponent(
-                        text="請點選下方按鈕確認是否送出：",
-                        size="sm",
-                        color="#888888",
-                        margin="md",
+                        text="請點選下方按鈕確認是否送出：", size="sm", color="#888888", margin="md"
                     ),
                 ],
             ),
@@ -557,14 +552,12 @@ def handle_waiting_confirm(
                             margin="md",
                         ),
                         TextComponent(
-                            text=f"地址：{created_order.address}",
-                            wrap=True,
-                            margin="md",
+                            text=f"地址：{created_order.address}", wrap=True, margin="md"
                         ),
                         TextComponent(text="配送內容：", margin="md"),
                         *product_lines,  # 若太擠可以考慮在 product_lines 中的每一項也加上 margin
                         TextComponent(
-                            text=f"額度扣除：${created_order.total_fee}",
+                            text=f"點數扣除：{created_order.total_fee} 點",
                             margin="md",
                             wrap=True,
                         ),
