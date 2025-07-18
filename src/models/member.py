@@ -69,11 +69,3 @@ class Member:
             "bank_account": self.bank_account,
             "remain_free_quota": self.remain_free_quota,
         }
-
-    def __post_init__(self):
-        if self.remain_volume < 0:
-            raise ValueError("remain_volume cannot be negative")
-        if self.remain_delivery < 0:
-            raise ValueError("remain_delivery cannot be negative")
-        if self.balance < 0:
-            raise ValueError("balance cannot be negative")
