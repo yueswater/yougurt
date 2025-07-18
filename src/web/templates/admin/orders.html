@@ -3,7 +3,19 @@
 
 {% block content %}
 <div class="max-w-6xl mx-auto p-6">
-    <h2 class="text-2xl font-bold mb-6 text-center">訂單列表</h2>
+    <h2 class="text-2xl font-bold mb-6 text-left">訂單列表</h2>
+
+    <div class="mb-4 flex items-center space-x-1">
+        <div class="relative">
+            <input id="search-order-name" type="text" placeholder="搜尋會員姓名" value="{{ request.args.get('search', '') }}"
+                class="px-3 py-2 pr-8 border border-gray-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-gray-200 focus:border-gray-200">
+            <button onclick="clearSearch()"
+                class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black focus:outline-none">
+                <i class="fas fa-times text-sm"></i>
+            </button>
+        </div>
+    </div>
+
 
     <div class="overflow-x-auto bg-white shadow-md rounded-lg">
         <table class="w-full text-sm text-left text-gray-600">
@@ -49,4 +61,37 @@
         </table>
     </div>
 </div>
+
+<script>
+    const searchInput = document.getElementById("search-order-name");
+    let composing = false;
+    let debounceTimer = null;
+
+    searchInput.addEventListener("compositionstart", () => composing = true);
+    searchInput.addEventListener("compositionend", () => {
+        composing = false;
+        triggerSearch();
+    });
+
+    searchInput.addEventListener("input", () => {
+        if (!composing) triggerSearch();
+    });
+
+    function triggerSearch() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            const query = searchInput.value.trim();
+            const url = query
+                ? `/admin/orders?search=${encodeURIComponent(query)}`
+                : `/admin/orders`;
+            window.location.href = url;
+        }, 300);
+    }
+
+    function clearSearch() {
+        document.getElementById("search-order-name").value = "";
+        triggerSearch();
+    }
+</script>
+
 {% endblock %}

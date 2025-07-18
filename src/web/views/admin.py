@@ -43,8 +43,12 @@ def confirm_payment():
 
 @admin_bp.route("/members/partial", methods=["GET"])
 def members_partial():
+    search = request.args.get("search", "").strip()
     repo = GoogleSheetMemberRepository()
-    members = repo.get_all()
+    if search:
+        members = [m for m in repo.get_all() if search in str(m.member_name)]
+    else:
+        members = repo.get_all()
     return render_template("admin/_member_table.html", members=members)
 
 
@@ -120,9 +124,8 @@ def freeze_member():
 
 @admin_bp.route("/orders", methods=["GET"])
 def show_orders():
+    search = request.args.get("search", "").strip()
     order_repo = GoogleSheetOrderRepository()
-    GoogleSheetMemberRepository()
-
     orders = order_repo.get_all()
     members = get_cached_members()
 
@@ -131,6 +134,9 @@ def show_orders():
 
     for o in orders:
         o.member_name = member_map.get(str(o.member_id), "未知會員")
+
+    if search:
+        orders = [o for o in orders if search in str(o.member_name)]
 
     return render_template("admin/orders.html", orders=orders)
 

@@ -148,6 +148,10 @@ class GoogleSheetMemberRepository(MemberRepository):
         member.valid_member = False
         self.update(member)
 
+    def search_by_name(self, keyword: str) -> List[Member]:
+        all_members = self.get_all()
+        return [m for m in all_members if keyword in str(m.member_name)]
+
     @staticmethod
     def parse_bool(value: str) -> bool:
         return str(value).strip().lower() not in ("false", "0", "", "no", "n")

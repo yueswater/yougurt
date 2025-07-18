@@ -13,8 +13,10 @@
   </div>
 
   <div class="overflow-x-auto rounded-lg shadow">
-    <h3 id="refresh-indicator" class="text-xs text-gray-400 mb-2">最後更新：尚未載入</h3>
-
+    <div class="mb-4 flex items-center space-x-2">
+      <input id="search-name" type="text" placeholder="搜尋姓名"
+        class="px-3 py-2 border border-gray-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-gray-200 focus:border-gray-200">
+    </div>
     <table class="min-w-full divide-y divide-gray-200 bg-white">
       <thead class="bg-gray-100">
         <tr>
@@ -30,8 +32,8 @@
         </tr>
       </thead>
 
-      <tbody id="member-table" hx-get="/admin/members/partial" hx-trigger="every 5s" hx-target="#member-table"
-        hx-swap="innerHTML" class="divide-y divide-gray-200">
+      <tbody id="member-table" hx-get="/admin/members/partial" hx-trigger="load" hx-target="#member-table"
+        hx-params="none" hx-swap="innerHTML" class="divide-y divide-gray-200">
         {% include "admin/_member_table.html" %}
       </tbody>
     </table>
@@ -41,10 +43,36 @@
 <div id="edit-member-modal"></div>
 
 <script>
+  const searchInput = document.getElementById('search-name');
+  let composing = false;
+  let debounceTimer = null;
+
+  searchInput.addEventListener('compositionstart', () => composing = true);
+  searchInput.addEventListener('compositionend', () => {
+    composing = false;
+    triggerSearch();
+  });
+
+  searchInput.addEventListener('input', () => {
+    if (!composing) triggerSearch();
+  });
+
+  function triggerSearch() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      const query = searchInput.value.trim();
+      const url = `/admin/members/partial?search=${encodeURIComponent(query)}`;
+      htmx.ajax('GET', url, { target: '#member-table', swap: 'innerHTML' });
+    }, 300); // 300ms debounce
+  }
+
   document.body.addEventListener("htmx:afterSwap", function (evt) {
     if (evt.detail.target.id === "member-table") {
       const now = new Date().toLocaleTimeString();
-      document.getElementById("refresh-indicator").innerText = "最後更新：" + now;
+      const refreshIndicator = document.getElementById("refresh-indicator");
+      if (refreshIndicator) {
+        refreshIndicator.innerText = "最後更新：" + now;
+      }
     }
   });
 </script>
