@@ -70,7 +70,9 @@ class OrderService:
         member.remain_delivery -= 1  # 1
 
         member.total_delivery_fee = (
-            0 if remain_delivery > 0 else abs(remain_delivery) * BASIC_DELIVERY_FEE
+            0
+            if remain_delivery > 0
+            else abs(member.remain_delivery) * BASIC_DELIVERY_FEE
         )
 
         member_repo.update(member)
