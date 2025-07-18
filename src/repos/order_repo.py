@@ -86,6 +86,7 @@ class GoogleSheetOrderRepository(OrderRepository):
                 "recipient": row["Recipient"],
                 "address": row["Address"],
                 "invoice": row["Invoice"],
+                "delivery_fee": row["Delivery Fee"],
             }
             orders.append(Order.from_dict(data))
         return orders

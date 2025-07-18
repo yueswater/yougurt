@@ -15,7 +15,6 @@ from src.core.session.history_session_store import HisotrySessionStore
 from src.models.order import DeliverStatus, OrderStatus
 from src.repos.member_repo import GoogleSheetMemberRepository
 from src.repos.order_repo import GoogleSheetOrderRepository
-from src.services.constants import BASIC_DELIVERY_FEE
 from src.services.member_service import MemberService
 
 order_mapping = {
@@ -121,9 +120,6 @@ def handle_order_detail(line_id: str, order_id: str) -> FlexSendMessage:
 
     order_status = order_mapping.get(order.confirmed_order.name, "")
     delivery_status = deliver_mapping.get(order.deliver_status.name, "")
-    member = member_service.get_by_line_id(line_id)
-    extra_delivery = True if member.remain_delivery - 1 < 0 else False
-    delivery_fee = BASIC_DELIVERY_FEE if extra_delivery else 0
 
     # 建立整體內容，欄位加入 margin
     contents = BubbleContainer(
@@ -141,7 +137,7 @@ def handle_order_detail(line_id: str, order_id: str) -> FlexSendMessage:
                 *product_lines,
                 SeparatorComponent(margin="md"),
                 TextComponent(text=f"額度扣除：${order.total_fee}", margin="md"),
-                TextComponent(text=f"運費：${delivery_fee}", margin="md"),
+                TextComponent(text=f"運費：${int(order.delivery_fee)}", margin="md"),
                 TextComponent(
                     text=f"訂購日期：{order.order_date.strftime('%Y-%m-%d')}", margin="md"
                 ),
