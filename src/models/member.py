@@ -23,6 +23,7 @@ class Member:
     order_type: str
     remain_delivery: int
     remain_volume: int
+    remain_free_quota: int
     payment_status: PaymentStatus
     balance: int = 0
     valid_member: bool = False
@@ -49,6 +50,7 @@ class Member:
             balance=data["balance"],
             valid_member=data["valid_member"],
             bank_account=data["bank_account"],
+            remain_free_quota=data["remain_free_quota"],
         )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -65,6 +67,7 @@ class Member:
             "balance": self.balance,
             "valid_member": self.valid_member,
             "bank_account": self.bank_account,
+            "remain_free_quota": self.remain_free_quota,
         }
 
     def __post_init__(self):

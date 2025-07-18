@@ -25,6 +25,7 @@ def test_member_negative_remain_delivery():
             payment_status=PaymentStatus.UNPAID,
             balance=0,
             valid_member=False,
+            remain_free_quota=1,
         )
     assert "remain_delivery cannot be negative" in str(exc.value)
 
@@ -43,5 +44,6 @@ def test_member_negative_balance():
             payment_status=PaymentStatus.UNPAID,
             balance=-500,
             valid_member=False,
+            remain_free_quota=1,
         )
     assert "balance cannot be negative" in str(exc.value)

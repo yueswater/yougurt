@@ -21,6 +21,7 @@ def valid_member():
         payment_status=PaymentStatus.UNPAID,
         balance=1000,
         valid_member=False,
+        remain_free_quota=1,
     )
 
 

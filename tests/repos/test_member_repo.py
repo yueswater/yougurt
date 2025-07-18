@@ -18,6 +18,7 @@ def test_add_member_should_call_append_row():
         payment_status=PaymentStatus.UNPAID,
         balance=1000,
         valid_member=False,
+        remain_free_quota=1,
     )
 
     repo = GoogleSheetMemberRepository.__new__(GoogleSheetMemberRepository)

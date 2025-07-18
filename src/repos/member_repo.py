@@ -73,6 +73,7 @@ class GoogleSheetMemberRepository(MemberRepository):
                 "balance": row["Balance"],
                 "valid_member": row["Valid Member"],
                 "bank_account": row["Bank Account"],
+                "remain_free_quota": row["Remain Free Quota"],
             }
             members.append(Member.from_dict(data))
         return members
@@ -129,6 +130,7 @@ class GoogleSheetMemberRepository(MemberRepository):
             data["balance"],
             data["valid_member"],
             data["bank_account"],
+            data["remain_free_quota"],
         ]
 
         # Overwrite data
