@@ -61,7 +61,10 @@ def handle_waiting_address(line_id: str, text: str) -> FlexSendMessage:
                         text=f"地址：{text}", wrap=True, margin="md", weight="bold"
                     ),
                     TextComponent(
-                        text="請確認您的收件地址是否正確", margin="md", size="sm", color="#888888"
+                        text="請確認您的收件地址是否正確",
+                        margin="md",
+                        size="sm",
+                        color="#888888",
                     ),
                 ],
             ),
@@ -181,11 +184,13 @@ def handle_selected_category(
 
         # 建立 bubble
         bubble = BubbleContainer(
-            hero=ImageComponent(
-                url=image_url, size="md", aspect_ratio="1:1", aspect_mode="fit"
-            )
-            if image_url
-            else None,
+            hero=(
+                ImageComponent(
+                    url=image_url, size="md", aspect_ratio="1:1", aspect_mode="fit"
+                )
+                if image_url
+                else None
+            ),
             body=BoxComponent(
                 layout="vertical",
                 contents=[
@@ -216,7 +221,9 @@ def handle_selected_category(
                 layout="vertical",
                 contents=[
                     TextComponent(
-                        text=f"是否完成『{selected_category}』的選購？", weight="bold", size="md"
+                        text=f"是否完成『{selected_category}』的選購？",
+                        weight="bold",
+                        size="md",
                     ),
                     TextComponent(
                         text="您可以繼續選購商品，最後再點選「完成」來完成此分類選購",
@@ -423,7 +430,10 @@ def handle_selected_date(line_id: str, date_str: str) -> FlexSendMessage:
                     ),
                     SeparatorComponent(margin="md"),
                     TextComponent(
-                        text="請點選下方按鈕確認是否送出：", size="sm", color="#888888", margin="md"
+                        text="請點選下方按鈕確認是否送出：",
+                        size="sm",
+                        color="#888888",
+                        margin="md",
                     ),
                 ],
             ),
@@ -547,7 +557,9 @@ def handle_waiting_confirm(
                             margin="md",
                         ),
                         TextComponent(
-                            text=f"地址：{created_order.address}", wrap=True, margin="md"
+                            text=f"地址：{created_order.address}",
+                            wrap=True,
+                            margin="md",
                         ),
                         TextComponent(text="配送內容：", margin="md"),
                         *product_lines,  # 若太擠可以考慮在 product_lines 中的每一項也加上 margin

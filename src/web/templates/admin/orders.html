@@ -10,6 +10,7 @@
             <thead class="bg-gray-100 text-xs uppercase">
                 <tr>
                     <th class="px-4 py-3">訂單編號</th>
+                    <th class="px-4 py-3">成立日期</th>
                     <th class="px-4 py-3">會員姓名</th>
                     <th class="px-4 py-3">確認狀態</th>
                     <th class="px-4 py-3">出貨日期</th>
@@ -20,7 +21,12 @@
             <tbody>
                 {% for order in orders %}
                 <tr class="border-b">
-                    <td class="px-4 py-2">{{ order.order_id }}</td>
+                    <td class="px-4 py-2 font-mono text-xs text-gray-700" title="{{ order.order_id }}">
+                        {{ (order.order_id|string)[:6] }}...{{ (order.order_id|string)[-6:] }}
+                    </td>
+                    <td class="px-4 py-2">
+                        {{ order.order_date.strftime('%Y-%m-%d %H:%M:%S') if order.order_date else '未指定' }}
+                    </td>
                     <td class="px-4 py-2">{{ order.member_name }}</td>
                     <td class="px-4 py-2">{{ order.confirmed_order_text }}</td>
                     <td class="px-4 py-2">
@@ -28,10 +34,14 @@
                     </td>
                     <td class="px-4 py-2">{{ order.deliver_status_text }}</td>
                     <td class="px-4 py-2 text-right">
+                        {% if order.order_id %}
                         <a href="{{ url_for('admin.edit_order', order_id=order.order_id) }}"
                             class="inline-flex items-center px-3 py-1 text-sm bg-gray-400 hover:bg-gray-200 text-white rounded-lg shadow">
                             <i class="fas fa-edit mr-1"></i> 編輯
                         </a>
+                        {% else %}
+                        <span class="text-muted">無法編輯</span>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}

@@ -1,9 +1,9 @@
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from uuid import uuid4
 
 from flask import Blueprint, redirect, render_template, request, url_for
 
-from src.models.member import Member
+from src.models.member import Member, PaymentStatus
 from src.models.order import DeliverStatus, OrderStatus
 from src.repos.member_repo import GoogleSheetMemberRepository
 from src.repos.order_repo import GoogleSheetOrderRepository
@@ -13,7 +13,13 @@ admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 ORDER_STATUS_TEXT = {"PENDING": "待確認", "CONFIRMED": "已確認", "CANCELLED": "已取消"}
 
-DELIVER_STATUS_TEXT = {"PREPARE": "準備中", "DELIVERING": "配送中", "DELIVERED": "已送達"}
+DELIVER_STATUS_TEXT = {
+    "PREPARE": "準備中",
+    "DELIVERING": "配送中",
+    "DELIVERED": "已送達",
+}
+
+# Member Console
 
 
 @admin_bp.route("/members", methods=["GET"])
@@ -29,7 +35,7 @@ def confirm_payment():
     repo = GoogleSheetMemberRepository()
     member = repo.get_by_line_id(line_id)
     if member:
-        member.valid_member = True
+        member.payment_status = PaymentStatus.PAID
         repo.update(member)
     members = repo.get_all()
     return render_template("admin/members.html", members=members)
@@ -90,10 +96,27 @@ def update_member(line_id):
     member.member_name = form.get("member_name")
     member.phone = form.get("phone")
     member.bank_account = form.get("bank_account") or None
+    member.balance = int(form.get("balance") or 0)
+    member.remain_delivery = int(form.get("remain_delivery") or 0)
 
     repo.update(member)
     members = repo.get_all()
     return render_template("admin/members.html", members=members)
+
+
+@admin_bp.route("/members/freeze", methods=["POST"])
+def freeze_member():
+    line_id = request.form.get("line_id")
+    repo = GoogleSheetMemberRepository()
+    member = repo.get_by_line_id(line_id)
+    if member:
+        member.payment_status = PaymentStatus.UNPAID
+        repo.update(member)
+    members = repo.get_all()
+    return render_template("admin/members.html", members=members)
+
+
+# Order Console
 
 
 @admin_bp.route("/orders", methods=["GET"])
@@ -113,36 +136,53 @@ def show_orders():
     return render_template("admin/orders.html", orders=orders)
 
 
-@admin_bp.route("/orders/<order_id>/edit", methods=["GET"])
+@admin_bp.route("/orders/<order_id>/edit", methods=["GET", "POST"])
 def edit_order(order_id):
-    repo = GoogleSheetOrderRepository()
-    order = repo.get_by_order_id(order_id)
-    if not order:
-        return "找不到訂單", 404
-    return render_template("admin/edit_order.html", order=order)
+    order_repo = GoogleSheetOrderRepository()
+    member_repo = GoogleSheetMemberRepository()
 
+    order = order_repo.get_by_order_id(order_id)
+    member = member_repo.get_by_member_id(order.member_id)
 
-@admin_bp.route("/orders/<order_id>/edit", methods=["POST"])
-def update_order(order_id):
-    repo = GoogleSheetOrderRepository()
-    order = repo.get_by_order_id(order_id)
     if not order:
         return "找不到訂單", 404
 
-    form = request.form
+    if request.method == "POST":
+        form = request.form
+        confirmed_list = form.getlist("confirmed_order")
+        confirmed_str = "CONFIRMED" if "CONFIRMED" in confirmed_list else "false"
+        order.confirmed_order = (
+            OrderStatus.CONFIRMED
+            if confirmed_str == "CONFIRMED"
+            else OrderStatus.PENDING
+        )
 
-    # Fix checkbox transmission logic
-    confirmed_list = form.getlist("confirmed_order")
-    confirmed_str = "CONFIRMED" if "CONFIRMED" in confirmed_list else "false"
-    order.confirmed_order = (
-        OrderStatus.CONFIRMED if confirmed_str == "CONFIRMED" else OrderStatus.PENDING
+        deliver_str = form.get("deliver_status")
+        deliver_date_str = form.get("deliver_date")
+        order.deliver_status = DeliverStatus[deliver_str] if deliver_str else None
+        order.deliver_date = deliver_date_str or None
+
+        order_items_str = form.get("order_items", "")
+        parsed_orders = {}
+        for item in order_items_str.split("、"):
+            if " * " in item:
+                name, qty = item.split(" * ")
+                parsed_orders[name.strip()] = int(qty.strip())
+        order.orders = parsed_orders
+
+        order_repo.update(order)
+        return redirect(url_for("admin.show_orders"))
+
+    # GET 的邏輯
+    order_items_str = "、".join(
+        f"{product_name} * {qty}" for product_name, qty in order.orders.items()
     )
 
-    # Shipping status and date
-    deliver_str = form.get("deliver_status")
-    deliver_date_str = form.get("deliver_date")
-    order.deliver_status = DeliverStatus[deliver_str] if deliver_str else None
-    order.deliver_date = deliver_date_str or None
-
-    repo.update(order)
-    return redirect(url_for("admin.show_orders"))
+    return render_template(
+        "admin/edit_order.html",
+        order=order,
+        member=member,
+        order_items=order_items_str,
+        today=date.today(),
+        max_date=date.today() + timedelta(days=14),
+    )

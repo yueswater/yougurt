@@ -4,6 +4,7 @@ from uuid import UUID
 
 from src.models.order import Order
 from src.repos.product_repo import GoogleSheetProductRepository
+from src.utils.safe_float import safe_float
 from src.utils.sheet_client import get_worksheet
 
 
@@ -82,7 +83,7 @@ class GoogleSheetOrderRepository(OrderRepository):
                     if " * " in item
                 },
                 "total_fee": row["Total Fee"],
-                "tax": float(row["Tax"]),
+                "tax": safe_float(row.get("Tax")),
                 "recipient": row["Recipient"],
                 "address": row["Address"],
                 "invoice": row["Invoice"],
@@ -123,7 +124,7 @@ class GoogleSheetOrderRepository(OrderRepository):
                     else data["deliver_status"]
                 )
                 orders_display = "、".join(
-                    f"{pid} * {qty}" for pid, qty in data["orders"].items()
+                    f"{name} * {qty}" for name, qty in data["orders"].items()
                 )
                 update_row = [
                     str(data["order_id"]),

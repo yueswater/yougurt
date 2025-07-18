@@ -139,10 +139,12 @@ def handle_order_detail(line_id: str, order_id: str) -> FlexSendMessage:
                 TextComponent(text=f"額度扣除：${order.total_fee}", margin="md"),
                 TextComponent(text=f"運費：${int(order.delivery_fee)}", margin="md"),
                 TextComponent(
-                    text=f"訂購日期：{order.order_date.strftime('%Y-%m-%d')}", margin="md"
+                    text=f"訂購日期：{order.order_date.strftime('%Y-%m-%d')}",
+                    margin="md",
                 ),
                 TextComponent(
-                    text=f"期望配送：{order.desired_date.strftime('%Y-%m-%d')}", margin="md"
+                    text=f"期望配送：{order.desired_date.strftime('%Y-%m-%d')}",
+                    margin="md",
                 ),
                 TextComponent(
                     text=(

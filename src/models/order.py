@@ -8,6 +8,8 @@ from src.models.constants import TAX_RATE
 from src.models.product import Product
 from src.utils.format_datetime import format_datetime
 from src.utils.format_uuid import format_uuid
+from src.utils.safe_float import safe_float
+from src.utils.safe_int import safe_int
 
 
 class OrderStatus(Enum):
@@ -42,31 +44,44 @@ class Order:
 
     @classmethod
     def from_dict(cls, data: Dict) -> "Order":
+        # Anti-duty treatment OrderStatus
+        confirmed_str = data.get("confirmed_order", "").strip()
+        try:
+            confirmed_order = OrderStatus[confirmed_str]
+        except KeyError:
+            confirmed_order = OrderStatus.PENDING
+
+        # Anti-duty treatment DeliverStatus
+        deliver_str = data.get("deliver_status", "").strip()
+        try:
+            deliver_status = DeliverStatus[deliver_str]
+        except KeyError:
+            deliver_status = None  # or DeliverStatus.PREPARE, if you have a preset
         return cls(
             order_id=format_uuid(data["order_id"]),
             order_date=format_datetime(data.get("order_date", datetime.now())),
-            confirmed_order=OrderStatus[data["confirmed_order"]],
+            confirmed_order=confirmed_order,
             desired_date=format_datetime(data["desired_date"]),
             deliver_date=format_datetime(data["deliver_date"]),
-            deliver_status=DeliverStatus[data["deliver_status"]],
+            deliver_status=deliver_status,
             payment_method=data["payment_method"],
             member_id=format_uuid(data["member_id"]),
             orders=data["orders"],  # dict
-            total_fee=data["total_fee"],
-            tax=data["tax"],
-            delivery_fee=float(data.get("delivery_fee", 0)),
+            total_fee=safe_int(data.get("total_fee", 0)),
+            tax=float(data.get("tax", 0)),
+            delivery_fee=safe_float(data.get("delivery_fee", 0)),
             recipient=data["recipient"],
             address=data["address"],
-            invoice=data["invoice"],
+            invoice=safe_int(data.get("invoice", 0)),
         )
 
     def to_dict(self) -> Dict[str, Any]:
         return {
             "order_id": self.order_id,
             "order_date": self.order_date,
-            "confirmed_order": self.confirmed_order.name
-            if self.confirmed_order
-            else None,
+            "confirmed_order": (
+                self.confirmed_order.name if self.confirmed_order else None
+            ),
             "desired_date": self.desired_date,
             "deliver_date": (
                 self.deliver_date.isoformat()
@@ -104,7 +119,7 @@ class Order:
             product = product_map.get(pid)
             if not product:
                 raise ValueError(f"Product ID {pid} not found")
-            total_fee += product.price * qty  # price * quantity
+            total_fee += product.price * qty  # price *quantity
 
         tax_fee = total_fee * self.tax_ratio()
         return {"tax_fee": tax_fee, "total_fee": total_fee}

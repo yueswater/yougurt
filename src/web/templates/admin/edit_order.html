@@ -4,7 +4,8 @@
 {% block content %}
 <div class="max-w-2xl mx-auto p-6 bg-white shadow-md rounded-lg">
   <h2 class="text-2xl font-bold mb-6 text-center">編輯訂單</h2>
-  <form method="POST" action="{{ url_for('admin.update_order', order_id=order.order_id) }}" class="space-y-6">
+  <form method="POST" action="{{ url_for('admin.edit_order', order_id=order.order_id) }}" class="space-y-6">
+    <input type="hidden" name="order_items" id="order_items_input">
 
     <!-- Confirmed Order Switch -->
     <div class="flex items-center justify-between">
@@ -22,23 +23,43 @@
       </label>
     </div>
 
+    <!-- 訂購人與收件人 -->
+    <div class="mt-4 p-4 border border-gray-300 rounded bg-gray-50 text-sm text-gray-700">
+      <p><strong>訂購人：</strong> {{ member.member_name }}</p>
+      <p><strong>收件人：</strong> {{ order.recipient }}</p>
+    </div>
+
+    <!-- Desired Date -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">預期收貨日期</label>
+      <p class="px-3 py-2 border border-gray-300 rounded bg-gray-100">
+        {{ order.desired_date.strftime('%Y-%m-%d') if order.desired_date else '未指定' }}
+      </p>
+    </div>
+
     <!-- Deliver Date -->
     <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">出貨日期</label>
+      <label class="block text-sm font-medium text-gray-700 mb-1">選擇出貨日期</label>
       <input type="date" name="deliver_date"
-        value="{{ order.deliver_date.strftime('%Y-%m-%d') if order.deliver_date else '' }}" required
+        value="{{ order.deliver_date.strftime('%Y-%m-%d') if order.deliver_date else '' }}"
+        min="{{ today.strftime('%Y-%m-%d') }}" max="{{ max_date.strftime('%Y-%m-%d') }}" required
         class="w-full px-3 py-2 border border-gray-300 rounded">
     </div>
 
     <!-- Deliver Status -->
     <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">出貨狀態</label>
+      <label class="block text-sm font-medium text-gray-700 mb-1">選擇出貨狀態</label>
       <select name="deliver_status" class="w-full px-3 py-2 border border-gray-300 rounded">
         <option value="PREPARE" {% if order.deliver_status=='PREPARE' %}selected{% endif %}>備貨中</option>
         <option value="DELIVERING" {% if order.deliver_status=='DELIVERING' %}selected{% endif %}>配送中</option>
         <option value="DELIVERED" {% if order.deliver_status=='DELIVERED' %}selected{% endif %}>已送達</option>
       </select>
     </div>
+
+    <button type="button" onclick="document.getElementById('product-modal').classList.remove('hidden')"
+      class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+      編輯商品
+    </button>
 
     <!-- 操作按鈕 -->
     <div class="pt-4 flex justify-center space-x-4">
@@ -59,6 +80,29 @@
       <p><strong>目前出貨日期：</strong> <span id="debug-date">（尚未選擇）</span></p>
       <p><strong>目前出貨狀態：</strong> <span id="debug-status">（尚未選擇）</span></p>
     </div>
+
+    <!-- 商品編輯 Modal -->
+    <div id="product-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+      <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+        <h3 class="text-lg font-bold mb-4">編輯商品與數量</h3>
+
+        <div id="product-list" class="space-y-2">
+          <!-- 動態商品輸入區 -->
+        </div>
+
+        <button type="button" onclick="addProductField()"
+          class="text-sm text-blue-600 hover:underline mt-2">＋新增商品</button>
+
+        <div class="flex justify-end mt-4 space-x-2">
+          <button type="button" onclick="saveProducts()"
+            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">儲存</button>
+          <button type="button" onclick="document.getElementById('product-modal').classList.add('hidden')"
+            class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">取消</button>
+        </div>
+      </div>
+    </div>
+
+
     <script>
       const confirmedInput = document.querySelector('input[name="confirmed_order"][value="CONFIRMED"]');
       const deliverDateInput = document.querySelector('input[name="deliver_date"]');
@@ -77,6 +121,65 @@
 
       // 初始顯示
       updateDebug();
+
+
+      // 初始化時如果有舊資料，自動載入
+      const container = document.getElementById("product-list");
+
+      function renderInitialProducts() {
+        const raw = "{{ order_items or '' }}";
+        const items = raw.split("、").map(item => item.trim()).filter(item => item);
+
+        for (let item of items) {
+          let match = item.match(/^(.+?)\s*\*\s*(\d+)$/);  // 支援「蜂蜜 * 12」或「蜂蜜*12」
+          if (match) {
+            addProductField(match[1], match[2]);
+          } else {
+            // fallback：可能是「蜂蜜 12」
+            let parts = item.split(/\s+/);
+            if (parts.length >= 2 && !isNaN(parts.at(-1))) {
+              let qty = parts.pop();
+              addProductField(parts.join(" "), qty);
+            } else {
+              addProductField(item, "");
+            }
+          }
+        }
+      }
+
+
+      function addProductField(name = "", qty = "") {
+        const div = document.createElement("div");
+        div.className = "flex space-x-2";
+
+        div.innerHTML = `
+      <input type="text" placeholder="商品名稱" value="${name}" class="flex-1 px-2 py-1 border rounded" />
+      <input type="number" placeholder="數量" value="${qty}" class="w-20 px-2 py-1 border rounded" min="1" />
+      <button type="button" onclick="this.parentElement.remove()" class="text-red-500 hover:text-red-700">刪除</button>
+    `;
+
+        container.appendChild(div);
+      }
+
+      function saveProducts() {
+        const inputs = container.querySelectorAll("div");
+        const result = [];
+
+        inputs.forEach(div => {
+          const name = div.children[0].value.trim();
+          const qty = div.children[1].value.trim();
+          if (name && qty) {
+            result.push(`${name} * ${qty}`);
+          }
+        });
+
+        document.getElementById("order_items_input").value = result.join("、");
+        document.getElementById("product-modal").classList.add("hidden");
+        document.querySelector("form").submit();
+      }
+
+      // 初始化載入
+      renderInitialProducts();
     </script>
 
   </form>

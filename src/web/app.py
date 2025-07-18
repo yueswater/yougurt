@@ -18,6 +18,10 @@ def create_app():
     def home():
         return render_template("home.html")
 
+    @app.route("/ping")
+    def ping():
+        return "pong"
+
     return app
 
 
