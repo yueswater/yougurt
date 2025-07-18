@@ -162,13 +162,14 @@ def edit_order(order_id):
         order.deliver_status = DeliverStatus[deliver_str] if deliver_str else None
         order.deliver_date = deliver_date_str or None
 
-        order_items_str = form.get("order_items", "")
-        parsed_orders = {}
-        for item in order_items_str.split("、"):
-            if " * " in item:
-                name, qty = item.split(" * ")
-                parsed_orders[name.strip()] = int(qty.strip())
-        order.orders = parsed_orders
+        order_items_str = form.get("order_items", "").strip()
+        if order_items_str:
+            parsed_orders = {
+                item.split(" * ")[0].strip(): int(item.split(" * ")[1].strip())
+                for item in order_items_str.split("、")
+                if " * " in item
+            }
+            order.orders = parsed_orders  # ✅ 有輸入才更新
 
         order_repo.update(order)
         return redirect(url_for("admin.show_orders"))
