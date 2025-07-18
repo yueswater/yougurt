@@ -59,7 +59,6 @@ def handle_message(event):
 
 @handler.add(PostbackEvent)
 def handle_postback(event):
-    print("✅ 收到 PostbackEvent")  # 測試是否有進來
     user_id = event.source.user_id
     data = event.postback.data
     params = event.postback.params

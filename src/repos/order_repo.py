@@ -108,6 +108,21 @@ class GoogleSheetOrderRepository(OrderRepository):
         orders = [o for o in all_orders if o.member_id == member_id]
         return orders
 
+    def delete(self, order_id: Union[str, UUID]) -> None:
+        if not isinstance(order_id, UUID):
+            order_id = UUID(order_id)
+
+        order_id_str = str(order_id)
+        all_rows = self.worksheet.get_all_values()  # 每列為 list，不是 dict
+
+        for idx, row in enumerate(all_rows[1:], start=2):  # 跳過 header，從 row 2 開始
+            cell_value = row[0].strip()
+            if cell_value == order_id_str:
+                self.worksheet.delete_rows(idx)
+                return
+
+        raise ValueError(f"Order ID {order_id_str} not found")
+
     def update(self, updated_order: Order) -> None:
         all_rows = self.worksheet.get_all_records()
         for idx, row in enumerate(all_rows, start=2):

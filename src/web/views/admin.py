@@ -45,7 +45,6 @@ def confirm_payment():
 def members_partial():
     repo = GoogleSheetMemberRepository()
     members = repo.get_all()
-    print("🔥 refreshing partial")
     return render_template("admin/_member_table.html", members=members)
 
 
@@ -187,3 +186,15 @@ def edit_order(order_id):
         today=date.today(),
         max_date=date.today() + timedelta(days=14),
     )
+
+
+@admin_bp.route("/orders/<order_id>/delete", methods=["POST"])
+def delete_order(order_id):
+    repo = GoogleSheetOrderRepository()
+    order = repo.get_by_order_id(order_id)
+
+    if not order:
+        return "找不到訂單", 404
+
+    repo.delete(order_id)
+    return redirect(url_for("admin.show_orders"))

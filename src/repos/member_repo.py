@@ -61,7 +61,6 @@ class GoogleSheetMemberRepository(MemberRepository):
         members = []
 
         for row in rows:
-            print(row["Create at"])
             data = {
                 "member_id": row["Member ID"],
                 "line_id": row["Line ID"],
