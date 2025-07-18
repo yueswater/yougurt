@@ -15,7 +15,7 @@ class MemberService:
     def create_member(
         self, line_id: str, name: str, phone: str, display_name: Optional[str] = None
     ) -> Member:
-        basic_fee = BASIC_PRICE * BASIC_DELIVERY * MONTHS  # 15840
+        basic_fee = BASIC_PRICE * (BASIC_DELIVERY - 1) * MONTHS  # 15840
         balance = BASIC_PRICE * BASIC_DELIVERY * MONTHS  # 17160
         unit_quota = BASIC_PRICE * BASIC_CUPS  # 1320
         member_data = {
@@ -32,7 +32,7 @@ class MemberService:
             "display_name": display_name,
             "valid_member": False,
             "bank_account": "",
-            "remain_free_quota": balance / (basic_fee + unit_quota),
+            "remain_free_quota": int(balance // (basic_fee + unit_quota)),
             "total_delivery_fee": 0,
         }
         member = Member.from_dict(member_data)
