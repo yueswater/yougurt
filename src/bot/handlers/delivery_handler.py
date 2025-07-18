@@ -45,7 +45,7 @@ def handle_check_quota(line_id: str):
                     ),
                     TextComponent(
                         text=(
-                            f"⚠️ 需補繳訂單差額：${need_to_pay}"
+                            f"需補繳訂單差額：${need_to_pay}"
                             if need_to_pay > 0
                             else "需補繳訂單差額：$0"
                         ),
@@ -54,7 +54,7 @@ def handle_check_quota(line_id: str):
                     ),
                     TextComponent(
                         text=(
-                            f"⚠️ 需繳交運費：${total_delivery_fee}"
+                            f"需繳交運費：${total_delivery_fee}"
                             if total_delivery_fee > 0
                             else "需繳交運費：$0"
                         ),
