@@ -24,6 +24,7 @@ from src.core.session.order_session_store import OrderSessionStore
 from src.repos.member_repo import GoogleSheetMemberRepository
 from src.repos.order_repo import GoogleSheetOrderRepository
 from src.repos.product_repo import GoogleSheetProductRepository
+from src.services.constants import BASIC_DELIVERY_FEE
 from src.services.member_service import MemberService
 from src.services.order_service import OrderService
 
@@ -390,6 +391,10 @@ def handle_selected_date(line_id: str, date_str: str) -> FlexSendMessage:
                 TextComponent(text=f"• {name} x {qty}瓶", wrap=True, margin="md")
             )
 
+    member = member_service.get_by_line_id(line_id)
+    extra_delivery = True if member.remain_delivery - 1 < 0 else False
+    delivery_fee = BASIC_DELIVERY_FEE if extra_delivery else 0
+
     return FlexSendMessage(
         alt_text="請確認訂單資訊",
         contents=BubbleContainer(
@@ -406,6 +411,12 @@ def handle_selected_date(line_id: str, date_str: str) -> FlexSendMessage:
                     ),
                     TextComponent(  # 🔽 額度扣除這一行
                         text=f"額度扣除：${total_price}",
+                        wrap=True,
+                        margin="md",
+                        weight="bold",
+                    ),
+                    TextComponent(
+                        text=f"運費：${delivery_fee}",
                         wrap=True,
                         margin="md",
                         weight="bold",
@@ -514,6 +525,10 @@ def handle_waiting_confirm(
                         )
                     )
 
+            member = member_service.get_by_line_id(line_id)
+            extra_delivery = True if member.remain_delivery - 1 < 0 else False
+            delivery_fee = BASIC_DELIVERY_FEE if extra_delivery else 0
+
             # 訂單詳情 Bubble
             order_detail_bubble = BubbleContainer(
                 body=BoxComponent(
@@ -538,6 +553,11 @@ def handle_waiting_confirm(
                         *product_lines,  # 若太擠可以考慮在 product_lines 中的每一項也加上 margin
                         TextComponent(
                             text=f"額度扣除：${created_order.total_fee}",
+                            margin="md",
+                            wrap=True,
+                        ),
+                        TextComponent(
+                            text=f"運費：${delivery_fee}",
                             margin="md",
                             wrap=True,
                         ),
