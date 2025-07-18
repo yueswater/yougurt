@@ -1,4 +1,4 @@
 .PHONY: run
 
 run:
-	python -m src.web.app
+	python3 -m src.web.app
