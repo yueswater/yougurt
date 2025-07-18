@@ -33,6 +33,7 @@ class MemberService:
             "valid_member": False,
             "bank_account": "",
             "remain_free_quota": balance / (basic_fee + unit_quota),
+            "total_delivery_fee": 0,
         }
         member = Member.from_dict(member_data)
         self.repo.add(member)

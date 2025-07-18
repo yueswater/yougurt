@@ -68,6 +68,11 @@ class OrderService:
             member.balance - order.total_fee
         )  # allow negative balance -> Negative number is the difference
         member.remain_delivery -= 1  # 1
+
+        member.total_delivery_fee = (
+            0 if remain_delivery > 0 else abs(remain_delivery) * BASIC_DELIVERY_FEE
+        )
+
         member_repo.update(member)
 
         # Update Order data

@@ -4,6 +4,7 @@ from enum import Enum
 from typing import Any, Dict
 from uuid import UUID
 
+from src.services.constants import BASIC_DELIVERY_FEE
 from src.utils.format_datetime import format_datetime
 from src.utils.format_uuid import format_uuid
 
@@ -24,6 +25,7 @@ class Member:
     remain_delivery: int
     remain_volume: int
     remain_free_quota: int
+    total_delivery_fee: int
     payment_status: PaymentStatus
     balance: int = 0
     valid_member: bool = False
@@ -36,6 +38,11 @@ class Member:
             PaymentStatus[raw_status]
             if isinstance(raw_status, str)
             else PaymentStatus(raw_status)
+        )
+
+        remain_delivery = data["remain_delivery"]
+        total_delivery_fee = (
+            0 if remain_delivery > 0 else abs(remain_delivery) * BASIC_DELIVERY_FEE
         )
         return cls(
             member_id=format_uuid(data["member_id"]),
@@ -51,6 +58,7 @@ class Member:
             valid_member=data["valid_member"],
             bank_account=data["bank_account"],
             remain_free_quota=data["remain_free_quota"],
+            total_delivery_fee=total_delivery_fee,
         )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -68,4 +76,5 @@ class Member:
             "valid_member": self.valid_member,
             "bank_account": self.bank_account,
             "remain_free_quota": self.remain_free_quota,
+            "total_delivery_fee": self.total_delivery_fee,
         }
