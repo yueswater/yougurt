@@ -62,16 +62,16 @@ class OrderService:
         member = member_repo.get_by_member_id(member_id=member_id)
         prev_balance = member.balance
 
+        invoice_amount = calculate_invoice_amount(
+            remaining_balance=member.balance, order_amount=order.total_fee
+        )
+
         member.balance = (
             prev_balance - order.total_fee
         )  # allow negative balance -> Negative number is the difference
         member.remain_delivery -= 1  # 1
 
         member_repo.update(member)
-
-        invoice_amount = calculate_invoice_amount(
-            remaining_balance=member.balance, order_amount=order.total_fee
-        )
 
         order.invoice = invoice_amount
 
