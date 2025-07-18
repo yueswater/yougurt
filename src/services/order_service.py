@@ -31,6 +31,7 @@ class OrderService:
     ) -> Order:
         now = datetime.now()
         member_id = member_service.get_by_line_id(line_id).member_id
+        member = member_repo.get_by_member_id(member_id=member_id)
 
         remain_delivery = member_repo.get_remain_delivery_by_id(member_id)
         delivery_fee = 0 if remain_delivery > 0 else BASIC_DELIVERY_FEE
@@ -59,20 +60,17 @@ class OrderService:
         order.total_fee = fee_detail["total_fee"]
 
         # Update Member data
-        member = member_repo.get_by_member_id(member_id=member_id)
-        prev_balance = member.balance
-
         invoice_amount = calculate_invoice_amount(
             remaining_balance=member.balance, order_amount=order.total_fee
         )
 
         member.balance = (
-            prev_balance - order.total_fee
+            member.balance - order.total_fee
         )  # allow negative balance -> Negative number is the difference
         member.remain_delivery -= 1  # 1
-
         member_repo.update(member)
 
+        # Update Order data
         order.invoice = invoice_amount
 
         self.order_repo.add(order)
