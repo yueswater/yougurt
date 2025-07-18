@@ -37,7 +37,7 @@ class Order:
     delivery_fee: int
     recipient: str
     address: str
-    invoice: str
+    invoice: int
     order_date: datetime = field(default_factory=datetime.now)
 
     @classmethod

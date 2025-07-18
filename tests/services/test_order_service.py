@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import List, Optional
 from uuid import UUID, uuid4
 
+from src.models.member import Member
 from src.models.order import Order
 from src.models.product import Product
 from src.repos.order_repo import OrderRepository
@@ -57,8 +58,29 @@ def test_create_order():
     class FakeMember:
         member_id = uuid4()
 
+    member_id = uuid4()
+    fake_member = Member(
+        member_id=member_id,
+        line_id="test-line-id",
+        member_name="王小明",
+        create_at=datetime.now(),
+        phone="0912345678",
+        order_type="常溫",
+        remain_delivery=3,
+        remain_volume=5,
+        payment_status="PAID",
+        balance=2000,
+        valid_member=True,
+        bank_account="123-456789",
+        remain_free_quota=1320,
+    )
+
     MemberService.get_by_line_id = lambda self, line_id: FakeMember()
+    GoogleSheetMemberRepository.get_by_member_id = lambda self, member_id: fake_member
     GoogleSheetMemberRepository.get_remain_delivery_by_id = lambda self, member_id: 1
+    GoogleSheetMemberRepository.update = (
+        lambda self, member, data=None: None
+    )  # Avoid update errors
 
     # Act
     order = service.create_order(
