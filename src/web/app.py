@@ -4,6 +4,7 @@ from src.utils.format_datetime import format_date_only
 
 # Import blueprint
 from src.web.views.admin import admin_bp
+from src.web.views.auth import auth_bp
 
 
 def create_app():
@@ -13,6 +14,7 @@ def create_app():
 
     # Register admin blueprint
     app.register_blueprint(admin_bp)
+    app.register_blueprint(auth_bp)
 
     @app.route("/")
     def home():

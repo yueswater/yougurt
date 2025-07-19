@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Ringo{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold mb-8 text-center mt-20">後台管理 Dashboard</h1>
+
+<div class="flex justify-center items-center gap-10 mt-20">
+  <!-- 會員管理 -->
+  <a href="/admin/members"
+     class="bg-white rounded-3xl shadow-md w-64 h-64 p-6 hover:shadow-xl transition transform hover:-translate-y-1 hover:scale-105 duration-300 flex flex-col justify-center items-center text-center">
+    <i class="fa-solid fa-users fa-4x text-[#92B72B] mb-4"></i>
+    <h3 class="text-xl font-semibold mb-2">會員管理</h3>
+    <p class="text-sm text-gray-600">檢視與管理註冊會員資料</p>
+  </a>
+
+  <!-- 訂單管理 -->
+  <a href="/admin/orders"
+     class="bg-white rounded-3xl shadow-md w-64 h-64 p-6 hover:shadow-xl transition transform hover:-translate-y-1 hover:scale-105 duration-300 flex flex-col justify-center items-center text-center">
+    <i class="fa-solid fa-box-open fa-4x text-[#92B72B] mb-4"></i>
+    <h3 class="text-xl font-semibold mb-2">訂單管理</h3>
+    <p class="text-sm text-gray-600">查看與處理客戶訂單記錄</p>
+  </a>
+</div>
+
+{% endblock %}

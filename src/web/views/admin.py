@@ -1,7 +1,7 @@
 from datetime import date, datetime, timedelta
 from uuid import uuid4
 
-from flask import Blueprint, redirect, render_template, request, url_for
+from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 
 from src.models.member import Member, PaymentStatus
 from src.models.order import DeliverStatus, OrderStatus
@@ -18,6 +18,19 @@ DELIVER_STATUS_TEXT = {
     "DELIVERING": "配送中",
     "DELIVERED": "已送達",
 }
+
+# Admin Console
+
+
+@admin_bp.route("/dashboard")
+def dashboard():
+    # 若非 admin 使用者導向首頁或給提示
+    if not session.get("user") or session["user"].get("username") != "admin":
+        flash("您沒有權限查看此頁面")
+        return redirect(url_for("home"))
+
+    return render_template("admin/dashboard.html")
+
 
 # Member Console
 
