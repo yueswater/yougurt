@@ -23,7 +23,6 @@
                 <div class="flex-grow">
                     <ul class="flex space-x-6 text-sm pl-10">
                         <li><a href="/" class="hover:text-[#92B72B]">首頁</a></li>
-                        <li><a href="/payment" class="hover:text-[#92B72B]">付款</a></li>
                         {% if session.get("user") and session["user"]["username"] == "admin" %}
                         <li><a href="/admin/dashboard" class="hover:text-[#92B72B]">後台管理</a></li>
                         {% endif %}
