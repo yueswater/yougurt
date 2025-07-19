@@ -8,8 +8,10 @@ class GoogleSheetWebMemberRepository:
     def __init__(self):
         self.worksheet = get_worksheet("Web Member")
 
-    def add_user(self, username: str, password: str, fullname: str) -> None:
-        row = ["", username, password, fullname]
+    def add_user(
+        self, username: str, password: str, fullname: str, line_id: str = ""
+    ) -> None:
+        row = [line_id, username, password, fullname]
         self.worksheet.append_row(row)
 
     def exists(self, username: str) -> bool:

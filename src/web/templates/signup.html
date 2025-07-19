@@ -5,6 +5,7 @@
   <div class="bg-white rounded-2xl shadow-md p-8 w-full max-w-md">
     <h2 class="text-2xl font-bold text-center mb-6">註冊</h2>
     <form method="POST" class="space-y-4">
+      <input type="hidden" name="line_id" id="line_id" value="">
       <input name="fullname" placeholder="姓名" required
         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ACD042]">
       <input name="username" placeholder="帳號" required pattern="[A-Za-z0-9]+" inputmode="latin" title="只能輸入英文字母與數字"
@@ -64,5 +65,11 @@
     strengthText.textContent = `強度：${labels[score]}`;
     strengthText.classList.remove("hidden");
   });
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const lineId = urlParams.get("line_id");
+  if (lineId) {
+    document.getElementById("line_id").value = lineId;
+  }
 </script>
 {% endblock %}

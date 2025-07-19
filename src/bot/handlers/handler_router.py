@@ -40,7 +40,9 @@ def dispatch(
     elif text == constants.KEYWORDS.get("Binding", ""):
         if user_handler.member_service.exists(line_id):
             return TextSendMessage(text=constants.Message.get("ALREADY_MEMBER", ""))
-        return user_handler.initiate_binding(line_id)
+
+        signup_url = f"http://127.0.0.1:5000/signup?line_id={line_id}"  # noqa: E231
+        return TextSendMessage(text=f"請點選以下連結完成會員註冊：\n{signup_url}")
 
     # 年購方案流程
     elif purchase_handler.purchase_session.is_active(line_id):
