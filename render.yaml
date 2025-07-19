@@ -1,11 +1,13 @@
 services:
   - type: web
-    name: linebot
-    env: python
+    name: yougurt-app
+    runtime: python
     buildCommand: "poetry install"
-    startCommand: "poetry run python -m src.bot.app"
+    startCommand: "poetry run python main.py"
     envVars:
+      - key: FLASK_ENV
+        value: production
       - key: LINE_CHANNEL_ACCESS_TOKEN
-        sync: false
+        value: {{ bvCf8poDf9DXhnCBmgkFLI4+oZOsW6NE3YW/53qrdWOeahnibXUl97hJduXO6nRF34h1w8E93Rkn7QzKK6lJl5wPWSklhe37jo8ChF33DqGk4/7pC7I+NmQZLQvcMWoOzRTuJCI/OPAyzFxzh4EOnAdB04t89/1O/w1cDnyilFU= }}  # 改成實際值或在後台設定
       - key: CHANNEL_SECRET
-        sync: false
+        value: {{ 07dc19f50d60d99784b37ec2e92ce93a }}  # 改成實際值或在後台設定

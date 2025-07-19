@@ -1,0 +1,66 @@
+import logging
+import os
+
+from dotenv import load_dotenv
+from flask import Blueprint, request
+from linebot import LineBotApi, WebhookHandler
+from linebot.exceptions import InvalidSignatureError
+from linebot.models import MessageEvent, PostbackEvent, TextMessage
+
+from src.bot.handlers import handler_router, order_handler
+from src.core.session.order_session_store import OrderSessionStore
+
+load_dotenv()
+line_bp = Blueprint("line", __name__, url_prefix="/line")
+
+# 初始化 Line
+CHANNEL_ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
+CHANNEL_SECRET = os.getenv("CHANNEL_SECRET")
+line_bot_api = LineBotApi(CHANNEL_ACCESS_TOKEN)
+handler = WebhookHandler(CHANNEL_SECRET)
+
+# 初始化 session store（可保留）
+order_session = OrderSessionStore()
+
+# 日誌設定（可搬去主程式）
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+)
+
+
+@line_bp.route("/callback", methods=["POST"])
+def callback():
+    signature = request.headers["X-Line-Signature"]
+    body = request.get_data(as_text=True)
+
+    try:
+        handler.handle(body, signature)
+    except InvalidSignatureError:
+        return "Invalid signature", 400
+
+    return "OK", 200
+
+
+@handler.add(MessageEvent, message=TextMessage)
+def handle_message(event):
+    user_id = event.source.user_id
+    text = event.message.text.strip()
+
+    reply = handler_router.dispatch(user_id, text, line_bot_api)
+    line_bot_api.reply_message(event.reply_token, reply)
+
+
+@handler.add(PostbackEvent)
+def handle_postback(event):
+    user_id = event.source.user_id
+    data = event.postback.data
+    params = event.postback.params
+
+    if "action=select_date" in data and params:
+        selected_date = params.get("date")
+        reply = order_handler.handle_selected_date(user_id, selected_date)
+    else:
+        reply = handler_router.dispatch_postback(user_id, data, line_bot_api)
+
+    line_bot_api.reply_message(event.reply_token, reply)
