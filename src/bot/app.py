@@ -2,7 +2,7 @@ import logging
 import os
 
 from dotenv import load_dotenv
-from flask import Flask, request
+from flask import request
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, PostbackEvent, TextMessage
@@ -13,9 +13,7 @@ from src.core.session.order_session_store import OrderSessionStore
 # 初始化 session store（如已初始化可刪除）
 order_session = OrderSessionStore()
 
-
 load_dotenv()
-app = Flask(__name__)
 
 # TODO: extract to be logger
 logging.basicConfig(
@@ -32,47 +30,42 @@ line_bot_api = LineBotApi(CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(CHANNEL_SECRET)
 
 
-@app.route("/callback", methods=["POST"])
-def callback():
-    """
-    Verify signature when connecting to Line service.
-    """
-    signature = request.headers["X-Line-Signature"]
-    body = request.get_data(as_text=True)
+def register_linebot(app):
+    @app.route("/callback", methods=["POST"])
+    def callback():
+        """
+        Verify signature when connecting to Line service.
+        """
+        signature = request.headers["X-Line-Signature"]
+        body = request.get_data(as_text=True)
 
-    try:
-        handler.handle(body, signature)
-    except InvalidSignatureError:
-        return "Invalid signature", 400
+        try:
+            handler.handle(body, signature)
+        except InvalidSignatureError:
+            return "Invalid signature", 400
 
-    return "OK", 200
+        return "OK", 200
 
+    @handler.add(MessageEvent, message=TextMessage)
+    def handle_message(event):
+        user_id = event.source.user_id
+        text = event.message.text.strip()
 
-@handler.add(MessageEvent, message=TextMessage)
-def handle_message(event):
-    user_id = event.source.user_id
-    text = event.message.text.strip()
+        reply = handler_router.dispatch(user_id, text, line_bot_api)
+        line_bot_api.reply_message(event.reply_token, reply)
 
-    reply = handler_router.dispatch(user_id, text, line_bot_api)
-    line_bot_api.reply_message(event.reply_token, reply)
+    @handler.add(PostbackEvent)
+    def handle_postback(event):
+        user_id = event.source.user_id
+        data = event.postback.data
+        params = event.postback.params
 
+        # 特殊處理：日期選擇
+        if "action=select_date" in data and params:
+            selected_date = params.get("date")
+            reply = order_handler.handle_selected_date(user_id, selected_date)
+        else:
+            # 一般 postback 處理
+            reply = handler_router.dispatch_postback(user_id, data, line_bot_api)
 
-@handler.add(PostbackEvent)
-def handle_postback(event):
-    user_id = event.source.user_id
-    data = event.postback.data
-    params = event.postback.params
-
-    # 特殊處理：日期選擇
-    if "action=select_date" in data and params:
-        selected_date = params.get("date")
-        reply = order_handler.handle_selected_date(user_id, selected_date)
-    else:
-        # 一般 postback 處理
-        reply = handler_router.dispatch_postback(user_id, data, line_bot_api)
-
-    line_bot_api.reply_message(event.reply_token, reply)
-
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5050)
+        line_bot_api.reply_message(event.reply_token, reply)
