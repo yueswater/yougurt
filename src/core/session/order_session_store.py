@@ -21,3 +21,9 @@ class OrderSessionStore:
 
     def is_active(self, line_id: str) -> bool:
         return line_id in self._store
+
+    def get_field(self, line_id: str, key: str) -> Any:
+        session = self.get_session(line_id)
+        if session:
+            return session.get(key)
+        return None

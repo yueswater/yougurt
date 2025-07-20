@@ -1,0 +1,54 @@
+{% for m in members %}
+<tr class="hover:bg-gray-50 transition duration-150">
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{{ m.member_name }}</td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{{ m.phone }}</td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ m.create_at|format_date_only }}</td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm">
+        {% if m.valid_member|string|lower == 'true' %}
+        <span class="inline-block px-2 py-1 text-green-800 bg-green-100 rounded-full text-xs">是</span>
+        {% else %}
+        <span class="inline-block px-2 py-1 text-red-800 bg-red-100 rounded-full text-xs">否</span>
+        {% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{{ m.balance }}</td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+        {% if m.bank_account %}
+        {{ m.bank_account|string }}
+        {% else %}
+        <span class="text-gray-400">尚未付款</span>
+        {% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm">
+        {% if m.payment_status.name|string|upper != 'PAID' %}
+        <form hx-post="/admin/members/confirm" hx-target="body" hx-swap="outerHTML">
+            <input type="hidden" name="line_id" value="{{ m.line_id }}">
+            <button type="submit"
+                class="bg-gray-200 text-gray-800 text-xs px-3 py-1 rounded hover:bg-gray-300 transition duration-150 border border-gray-300 shadow-sm">
+                確認付款
+            </button>
+        </form>
+        {% else %}
+        <span class="text-gray-400 text-xs">已付款</span>
+        {% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm">
+        {% if m.payment_status.name == 'PAID' %}
+        <form hx-post="/admin/members/freeze" hx-target="body" hx-swap="outerHTML">
+            <input type="hidden" name="line_id" value="{{ m.line_id }}">
+            <button type="submit"
+                class="bg-red-100 text-red-700 text-xs px-3 py-1 rounded hover:bg-red-200 transition duration-150 border border-red-300 shadow-sm">
+                凍結帳戶
+            </button>
+        </form>
+        {% else %}
+        <span class="text-gray-400 text-xs">未付款</span>
+        {% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+        <button class="text-gray-500 hover:text-gray-700" hx-get="/admin/members/{{ m.line_id }}/edit"
+            hx-target="#edit-member-modal" hx-swap="innerHTML">
+            <i class="fas fa-edit"></i>
+        </button>
+    </td>
+</tr>
+{% endfor %}

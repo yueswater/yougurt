@@ -1,0 +1,90 @@
+{# src/web/templates/admin/members.html #}
+{% extends "base.html" %}
+
+{% block content %}
+<div class="p-6">
+  <div class="flex items-center justify-between mb-4">
+    <h2 class="text-2xl font-bold">會員列表</h2>
+    <a href="{{ url_for('admin.new_member_form') }}"
+      class="px-4 py-2 bg-gray-700 text-white text-sm rounded hover:bg-gray-800 inline-flex items-center space-x-2">
+      <i class="fas fa-user-plus"></i>
+      <span>新增會員</span>
+    </a>
+  </div>
+
+  <div class="overflow-x-auto rounded-lg">
+    <div class="mb-4 relative w-48 max-w-xs">
+      <input id="search-name" type="text" placeholder="搜尋姓名"
+        class="w-full px-3 py-2 pr-8 border border-gray-200 rounded text-sm focus:outline-none focus:ring-1 focus:ring-gray-200 focus:border-gray-200">
+
+      <button onclick="clearSearch()"
+        class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black focus:outline-none">
+        <i class="fas fa-times text-sm"></i>
+      </button>
+    </div>
+
+    <table class="min-w-full divide-y divide-gray-200 bg-white">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">姓名</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">電話</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">加入時間</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">正式會員</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">餘額</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">帳號末五碼</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">確認付款</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">凍結帳戶</th>
+          <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">編輯</th>
+        </tr>
+      </thead>
+
+      <tbody id="member-table" hx-get="/admin/members/partial" hx-trigger="load" hx-target="#member-table"
+        hx-params="none" hx-swap="innerHTML" class="divide-y divide-gray-200">
+        {% include "admin/_member_table.html" %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div id="edit-member-modal"></div>
+
+<script>
+  const searchInput = document.getElementById('search-name');
+  let composing = false;
+  let debounceTimer = null;
+
+  searchInput.addEventListener('compositionstart', () => composing = true);
+  searchInput.addEventListener('compositionend', () => {
+    composing = false;
+    triggerSearch();
+  });
+
+  searchInput.addEventListener('input', () => {
+    if (!composing) triggerSearch();
+  });
+
+  function triggerSearch() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      const query = searchInput.value.trim();
+      const url = `/admin/members/partial?search=${encodeURIComponent(query)}`;
+      htmx.ajax('GET', url, { target: '#member-table', swap: 'innerHTML' });
+    }, 300); // 300ms debounce
+  }
+
+  document.body.addEventListener("htmx:afterSwap", function (evt) {
+    if (evt.detail.target.id === "member-table") {
+      const now = new Date().toLocaleTimeString();
+      const refreshIndicator = document.getElementById("refresh-indicator");
+      if (refreshIndicator) {
+        refreshIndicator.innerText = "最後更新：" + now;
+      }
+    }
+  });
+
+  function clearSearch() {
+    document.getElementById("search-name").value = "";
+    triggerSearch();
+  }
+</script>
+{% endblock %}

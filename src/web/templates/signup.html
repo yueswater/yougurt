@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex justify-center items-center min-h-[70vh]">
+  <div class="bg-white rounded-2xl shadow-md p-8 w-full max-w-md">
+    <h2 class="text-2xl font-bold text-center mb-6">註冊</h2>
+    <form method="POST" class="space-y-4">
+      <input name="fullname" placeholder="姓名" required
+        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ACD042]">
+      <input name="username" placeholder="帳號" required pattern="[A-Za-z0-9]+" inputmode="latin" title="只能輸入英文字母與數字"
+        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ACD042]">
+      <input id="password" name="password" type="password" placeholder="密碼" required
+        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ACD042]">
+      <div id="strength-container" class="relative h-3 w-full rounded-lg bg-gray-300 overflow-hidden hidden">
+        <div id="strength-fill" class="h-full w-0 rounded transition-all duration-300"></div>
+      </div>
+      <p id="strength-text" class="text-sm mt-1 text-gray-500 hidden"></p>
+
+      <button type="submit"
+        class="w-full bg-[#ACD042] text-white py-2 rounded-lg font-semibold hover:bg-[#92B72B] transition">註冊</button>
+    </form>
+
+    <div class="text-sm text-center mt-4 text-gray-600">
+      已有帳號？
+      <a href="/login" class="text-[#92B72B] hover:underline">立即登入</a>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/zxcvbn@4.4.2/dist/zxcvbn.js"></script>
+<script>
+  // 帳號
+  const usernameInput = document.querySelector('input[name="username"]');
+  usernameInput.addEventListener("input", function () {
+    this.value = this.value.replace(/[^a-zA-Z0-9]/g, '');
+  });
+
+  // 密碼
+  const passwordInput = document.getElementById("password");
+  const strengthFill = document.getElementById("strength-fill");
+  const strengthText = document.getElementById("strength-text");
+  const strengthContainer = document.getElementById("strength-container");
+
+  passwordInput.addEventListener("input", function () {
+    const pw = passwordInput.value;
+
+    if (!pw) {
+      strengthFill.style.width = "0";
+      strengthFill.className = "h-full w-0 rounded-full";
+      strengthContainer.classList.add("hidden");
+      strengthText.classList.add("hidden");
+      return;
+    }
+
+    const result = zxcvbn(pw);
+    const score = result.score;
+    const widthPercent = ["5%", "25%", "50%", "75%", "100%"][score];
+    const colors = ["bg-red-500", "bg-orange-400", "bg-yellow-400", "bg-blue-500", "bg-green-500"];
+    const labels = ["非常弱", "弱", "普通", "強", "非常強"];
+
+    strengthFill.style.width = widthPercent;
+    strengthFill.className = `h-full rounded transition-all duration-300 ${colors[score]}`;
+    strengthContainer.classList.remove("hidden");
+    strengthText.textContent = `強度：${labels[score]}`;
+    strengthText.classList.remove("hidden");
+  });
+</script>
+{% endblock %}

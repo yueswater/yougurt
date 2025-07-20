@@ -1,0 +1,6 @@
+BASIC_PRICE: int = 110
+MONTHS: int = 12
+BASIC_DELIVERY: int = MONTHS + 1
+BASIC_DELIVERY_FEE: int = 160
+BASIC_CUPS: int = 12  # 基本瓶數
+MINIMUM_CUPS: int = 6  # 最小運送瓶數

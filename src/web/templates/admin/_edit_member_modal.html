@@ -1,0 +1,63 @@
+<div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div class="bg-white p-6 rounded shadow-lg w-full max-w-lg">
+        <h3 class="text-xl font-bold mb-4">編輯會員</h3>
+
+        <form method="POST" action="/admin/members/{{ member.line_id }}/update" id="edit-member-form">
+            <input type="hidden" name="member_id" value="{{ member.member_id }}">
+
+            <!--Name -->
+            <div class="mb-4">
+                <label class="block text-sm">姓名</label>
+                <input name="member_name" value="{{ member.member_name }}" required
+                    class="w-full border px-3 py-2 rounded">
+            </div>
+
+            <!--Telephone -->
+            <div class="mb-4">
+                <label class="block text-sm">電話</label>
+                <input name="phone" value="{{ member.phone }}" required class="w-full border px-3 py-2 rounded">
+            </div>
+
+            <!--Bank account -->
+            <div class="mb-4">
+                <label class="block text-sm">銀行帳號後五碼</label>
+                <input name="bank_account" value="{{ member.bank_account or '' }}"
+                    class="w-full border px-3 py-2 rounded">
+            </div>
+
+            <!-- Balance -->
+            <div class="mb-4">
+                <label class="block text-sm">餘額</label>
+                <input type="number" id="balance" name="balance" value="{{ member.balance or '' }}"
+                    class="w-full border px-3 py-2 rounded">
+            </div>
+
+            <!-- Balance -->
+            <div class="mb-4">
+                <label class="block text-sm">剩餘配送次數</label>
+                <input type="number" id="remain_delivery" name="remain_delivery"
+                    value="{{ member.remain_delivery or '' }}" class="w-full border px-3 py-2 rounded">
+            </div>
+
+            <!--Button -->
+            <div class="flex justify-end space-x-3">
+                <button type="button" onclick="resetFieldsAndSubmit()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">重置</button>
+                <button type="submit" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">儲存</button>
+                <button type="button" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
+                    onclick="closeModal()">取消</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function closeModal() {
+        document.getElementById("edit-member-modal").innerHTML = "";
+    }
+
+    function resetFieldsAndSubmit() {
+        document.getElementById("balance").value = 17160;
+        document.getElementById("remain_delivery").value = 13;
+        document.getElementById("edit-member-form").submit();
+    }
+</script>

@@ -1,8 +1,8 @@
-from typing import Union
 from uuid import UUID
 
 
-def format_uuid(id: Union[str, UUID]) -> UUID:
-    if isinstance(id, str):
-        return UUID(id)
-    return id
+def format_uuid(id):
+    try:
+        return UUID(str(id))
+    except (ValueError, TypeError):
+        return None

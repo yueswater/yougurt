@@ -1,10 +1,17 @@
 from dataclasses import dataclass
 from datetime import datetime
+from enum import Enum
 from typing import Any, Dict
 from uuid import UUID
 
+from src.services.constants import BASIC_DELIVERY_FEE
 from src.utils.format_datetime import format_datetime
 from src.utils.format_uuid import format_uuid
+
+
+class PaymentStatus(Enum):
+    UNPAID = 0
+    PAID = 1
 
 
 @dataclass
@@ -17,11 +24,26 @@ class Member:
     order_type: str
     remain_delivery: int
     remain_volume: int
-    prepaid: int = 0
+    remain_free_quota: int
+    total_delivery_fee: int
+    payment_status: PaymentStatus
+    balance: int = 0
     valid_member: bool = False
+    bank_account: str = ""
 
     @classmethod
     def from_dict(cls, data: Dict) -> "Member":
+        raw_status = data["payment_status"]
+        payment_status = (
+            PaymentStatus[raw_status]
+            if isinstance(raw_status, str)
+            else PaymentStatus(raw_status)
+        )
+
+        remain_delivery = data["remain_delivery"]
+        total_delivery_fee = (
+            0 if remain_delivery > 0 else abs(remain_delivery) * BASIC_DELIVERY_FEE
+        )
         return cls(
             member_id=format_uuid(data["member_id"]),
             line_id=data["line_id"],
@@ -31,8 +53,12 @@ class Member:
             order_type=data["order_type"],
             remain_delivery=data["remain_delivery"],
             remain_volume=data["remain_volume"],
-            prepaid=data["prepaid"],
+            payment_status=payment_status,
+            balance=data["balance"],
             valid_member=data["valid_member"],
+            bank_account=data["bank_account"],
+            remain_free_quota=data["remain_free_quota"],
+            total_delivery_fee=total_delivery_fee,
         )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -45,14 +71,10 @@ class Member:
             "order_type": self.order_type,
             "remain_delivery": self.remain_delivery,
             "remain_volume": self.remain_volume,
-            "prepaid": self.prepaid,
+            "payment_status": self.payment_status.name if self.payment_status else None,
+            "balance": self.balance,
             "valid_member": self.valid_member,
+            "bank_account": self.bank_account,
+            "remain_free_quota": self.remain_free_quota,
+            "total_delivery_fee": self.total_delivery_fee,
         }
-
-    def __post_init__(self):
-        if self.remain_volume < 0:
-            raise ValueError("remain_volume cannot be negative")
-        if self.remain_delivery < 0:
-            raise ValueError("remain_delivery cannot be negative")
-        if self.prepaid < 0:
-            raise ValueError("prepaid cannot be negative")

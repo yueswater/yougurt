@@ -1,15 +1,20 @@
-import json
 from abc import ABC, abstractmethod
 from typing import List, Optional, Union
 from uuid import UUID
 
 from src.models.order import Order
+from src.repos.product_repo import GoogleSheetProductRepository
+from src.utils.safe_float import safe_float
 from src.utils.sheet_client import get_worksheet
 
 
 class OrderRepository(ABC):
     @abstractmethod
     def add(self, order: Order) -> None:
+        pass
+
+    @abstractmethod
+    def update(self, order: Order) -> None:
         pass
 
     @abstractmethod
@@ -29,21 +34,32 @@ class GoogleSheetOrderRepository(OrderRepository):
     def __init__(self):
         super().__init__()
         self.worksheet = get_worksheet("Orders")
+        self.product_repo = GoogleSheetProductRepository()
 
     def add(self, order: Order) -> None:
         data = order.to_dict()
+
+        orders_display = "、".join(
+            f"{self.product_repo.get_by_id(pid).product_name} * {qty}"
+            for pid, qty in data["orders"].items()
+        )
+
         row = [
             str(data["order_id"]),
             data["order_date"].isoformat(),
-            data["shipping_date"].isoformat(),
-            data["shipping_status"],
+            data["confirmed_order"],  # OrderStatus name
+            data["desired_date"].isoformat(),
+            data["deliver_date"],
+            data["deliver_status"],  # DeliverStatus name
             data["payment_method"],
             str(data["member_id"]),
-            json.dumps(data["orders"]),
-            data["order_fee"],
-            data["total_fee"],
+            orders_display,
+            str(data["total_fee"]),
+            str(data["tax"]),
+            str(data["delivery_fee"]),
+            data["recipient"],
             data["address"],
-            data["tax"],
+            data["invoice"],
         ]
         self.worksheet.append_row(row)
 
@@ -55,15 +71,23 @@ class GoogleSheetOrderRepository(OrderRepository):
             data = {
                 "order_id": row["Order ID"],
                 "order_date": row["Order Date"],
-                "shipping_date": row["Shipping Date"],
-                "shipping_status": row["Shipping Status"],
+                "confirmed_order": row["Confirmed Order"],
+                "desired_date": row["Desired Date"],
+                "deliver_date": row["Deliver Date"] or "",
+                "deliver_status": row["Deliver Status"],
                 "payment_method": row["Payment Method"],
                 "member_id": row["Member ID"],
-                "orders": json.loads(row["Orders"]),
-                "order_fee": row["Order Fee"],
+                "orders": {
+                    item.split(" * ")[0].strip(): int(item.split(" * ")[1].strip())
+                    for item in row["Orders"].split("、")
+                    if " * " in item
+                },
                 "total_fee": row["Total Fee"],
+                "tax": safe_float(row.get("Tax")),
+                "recipient": row["Recipient"],
                 "address": row["Address"],
-                "tax": row["Tax"],
+                "invoice": row["Invoice"],
+                "delivery_fee": row["Delivery Fee"],
             }
             orders.append(Order.from_dict(data))
         return orders
@@ -83,3 +107,57 @@ class GoogleSheetOrderRepository(OrderRepository):
 
         orders = [o for o in all_orders if o.member_id == member_id]
         return orders
+
+    def delete(self, order_id: Union[str, UUID]) -> None:
+        if not isinstance(order_id, UUID):
+            order_id = UUID(order_id)
+
+        order_id_str = str(order_id)
+        all_rows = self.worksheet.get_all_values()  # 每列為 list，不是 dict
+
+        for idx, row in enumerate(all_rows[1:], start=2):  # 跳過 header，從 row 2 開始
+            cell_value = row[0].strip()
+            if cell_value == order_id_str:
+                self.worksheet.delete_rows(idx)
+                return
+
+        raise ValueError(f"Order ID {order_id_str} not found")
+
+    def update(self, updated_order: Order) -> None:
+        all_rows = self.worksheet.get_all_records()
+        for idx, row in enumerate(all_rows, start=2):
+            if row["Order ID"] == str(updated_order.order_id):
+                data = updated_order.to_dict()
+                data["confirmed_order"] = (
+                    data["confirmed_order"].name
+                    if hasattr(data["confirmed_order"], "name")
+                    else data["confirmed_order"]
+                )
+                data["deliver_status"] = (
+                    data["deliver_status"].name
+                    if hasattr(data["deliver_status"], "name")
+                    else data["deliver_status"]
+                )
+                orders_display = "、".join(
+                    f"{name} * {qty}" for name, qty in data["orders"].items()
+                )
+                update_row = [
+                    str(data["order_id"]),
+                    data["order_date"].isoformat(),
+                    data["confirmed_order"],
+                    data["desired_date"].isoformat(),
+                    data["deliver_date"],
+                    data["deliver_status"],
+                    data["payment_method"],
+                    str(data["member_id"]),
+                    orders_display,
+                    str(data["total_fee"]),
+                    str(data["tax"]),
+                    str(data["delivery_fee"]),
+                    data["recipient"],
+                    data["address"],
+                    data["invoice"],
+                ]
+                self.worksheet.update(f"A{idx}:O{idx}", [update_row])  # noqa: E231
+                return
+        raise ValueError("Order not found")
