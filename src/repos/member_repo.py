@@ -1,5 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
+from enum import Enum
 from typing import List, Optional, Union
 from uuid import UUID
 
@@ -119,6 +120,17 @@ class GoogleSheetMemberRepository(MemberRepository):
         row_number = target_row_idx + 2
 
         data = member.to_dict()
+
+        # ✅ 修正 payment_status 與 valid_member 格式
+        if isinstance(data["payment_status"], Enum):
+            data["payment_status"] = data["payment_status"].name
+        elif hasattr(data["payment_status"], "name"):
+            data["payment_status"] = data["payment_status"].name
+        else:
+            data["payment_status"] = str(data["payment_status"])
+
+        data["valid_member"] = str(data["valid_member"]).upper()
+
         new_row = [
             str(data["member_id"]),
             data["line_id"],
@@ -136,7 +148,10 @@ class GoogleSheetMemberRepository(MemberRepository):
             data["total_delivery_fee"],
         ]
 
-        # Overwrite data
+        print(
+            f"✏️ 寫入 Google Sheet 第 {row_number} 列: payment_status={data['payment_status']}"
+        )
+
         range_name = f"A{row_number}:N{row_number}"  # noqa: E231
         self.worksheet.update(values=[new_row], range_name=range_name)
 

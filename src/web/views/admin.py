@@ -24,7 +24,7 @@ DELIVER_STATUS_TEXT = {
 
 @admin_bp.route("/dashboard")
 def dashboard():
-    # 若非 admin 使用者導向首頁或給提示
+    # If not admin user-oriented homepage or give prompts
     if not session.get("user") or session["user"].get("username") != "admin":
         flash("您沒有權限查看此頁面")
         return redirect(url_for("home"))
@@ -42,16 +42,25 @@ def show_members():
     return render_template("admin/members.html", members=members)
 
 
-@admin_bp.route("/members/confirm", methods=["POST"])
-def confirm_payment():
-    line_id = request.form.get("line_id")
+@admin_bp.route("/members/<line_id>/confirm", methods=["POST"])
+def confirm_payment(line_id):
+    # Check permissions
+    if not session.get("user") or session["user"].get("username") != "admin":
+        return "權限不足", 403
+
+    print(f"Confirming payment for line_id: {line_id}")
+
     repo = GoogleSheetMemberRepository()
     member = repo.get_by_line_id(line_id)
     if member:
         member.payment_status = PaymentStatus.PAID
         repo.update(member)
+        print("Payment confirmed successfully!")
+    else:
+        print(f"No member found with line_id: {line_id}")
+
     members = repo.get_all()
-    return render_template("admin/members.html", members=members)
+    return render_template("admin/_member_table.html", members=members)
 
 
 @admin_bp.route("/members/partial", methods=["GET"])
@@ -77,6 +86,11 @@ def create_member():
     payment_method = form.get("payment_method")  # Cash or Transfer
     bank_account = form.get("bank_account") if payment_method == "transfer" else None
 
+    # Set payment status according to payment method
+    payment_status = (
+        PaymentStatus.PAID if payment_method == "cash" else PaymentStatus.UNPAID
+    )
+
     member = Member(
         member_id=uuid4(),
         line_id=form.get("line_id") or None,
@@ -89,6 +103,9 @@ def create_member():
         balance=int(form.get("balance") or 0),
         valid_member=form.get("valid_member") == "true",
         bank_account=bank_account,
+        remain_free_quota=int(form.get("remain_free_quota") or 0),
+        total_delivery_fee=int(form.get("total_delivery_fee") or 0),
+        payment_status=payment_status,
     )
     repo = GoogleSheetMemberRepository()
     repo.add(member)
@@ -120,16 +137,22 @@ def update_member(line_id):
     return render_template("admin/members.html", members=members)
 
 
-@admin_bp.route("/members/freeze", methods=["POST"])
-def freeze_member():
-    line_id = request.form.get("line_id")
+@admin_bp.route("/members/<line_id>/freeze", methods=["POST"])
+def freeze_member(line_id):
+    print(f"🧊 Received line_id from URL: {line_id}")
+
     repo = GoogleSheetMemberRepository()
     member = repo.get_by_line_id(line_id)
+
     if member:
+        print(f"Freezing member: {member.member_name} ({line_id})")
         member.payment_status = PaymentStatus.UNPAID
         repo.update(member)
+    else:
+        print(f"No member found with line_id: {line_id}")
+
     members = repo.get_all()
-    return render_template("admin/members.html", members=members)
+    return render_template("admin/_member_table.html", members=members)
 
 
 # Order Console
@@ -187,12 +210,12 @@ def edit_order(order_id):
                 for item in order_items_str.split("、")
                 if " * " in item
             }
-            order.orders = parsed_orders  # ✅ 有輸入才更新
+            order.orders = parsed_orders
 
         order_repo.update(order)
         return redirect(url_for("admin.show_orders"))
 
-    # GET 的邏輯
+    # GET's logic
     order_items_str = "、".join(
         f"{product_name} * {qty}" for product_name, qty in order.orders.items()
     )
