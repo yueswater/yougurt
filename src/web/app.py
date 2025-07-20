@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask, render_template
 
 from src.utils.format_datetime import format_date_only
@@ -28,5 +30,6 @@ def create_app():
 
 
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))  # Render 或 CI 預設會設這個 PORT
     app = create_app()
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=port, debug=True)
