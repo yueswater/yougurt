@@ -1,6 +1,9 @@
 {% for m in members %}
 <tr class="hover:bg-gray-50 transition duration-150">
-    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{{ m.member_name }}</td>
+    <!-- <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{{ m.member_name }}</td> -->
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+        {{ m.member_name }}
+    </td>
     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{{ m.phone }}</td>
     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ m.create_at|format_date_only }}</td>
     <td class="px-6 py-4 whitespace-nowrap text-sm">
@@ -20,7 +23,7 @@
     </td>
     <td class="px-6 py-4 whitespace-nowrap text-sm">
         {% if m.payment_status.name|string|upper != 'PAID' %}
-        <button hx-post="/admin/members/{{ m.line_id }}/confirm" hx-target="#member-table" hx-swap="innerHTML"
+        <button hx-post="/admin/members/{{ m.member_id }}/confirm" hx-target="#member-table" hx-swap="innerHTML"
             class="bg-gray-200 text-gray-800 text-xs px-3 py-1 rounded hover:bg-gray-300 transition duration-150 border border-gray-300 shadow-sm">
             確認付款
         </button>
@@ -30,12 +33,16 @@
     </td>
     <td class="px-6 py-4 whitespace-nowrap text-sm">
         {% if m.payment_status.name == 'PAID' %}
-        <button hx-post="/admin/members/{{ m.line_id }}/freeze" hx-target="#member-table" hx-swap="innerHTML"
+        {% if m.member_id %}
+        <button hx-post="/admin/members/{{ m.member_id }}/freeze" hx-target="#member-table" hx-swap="innerHTML"
             class="text-red-500 hover:text-red-700">
             凍結帳戶
         </button>
         {% else %}
-        <span class="text-gray-400 text-xs">尚未付款</span>
+        <span class="text-gray-400 text-xs">無 member_id</span>
+        {% endif %}
+        {% else %}
+        <span class="text-gray-400 text-xs">未付款</span>
         {% endif %}
     </td>
     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">

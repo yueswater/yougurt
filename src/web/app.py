@@ -2,6 +2,7 @@ import os
 
 from flask import Flask, render_template
 
+from src.bot.app import register_linebot
 from src.utils.format_datetime import format_date_only
 
 # Import blueprint
@@ -17,6 +18,8 @@ def create_app():
     # Register admin blueprint
     app.register_blueprint(admin_bp)
     app.register_blueprint(auth_bp)
+
+    register_linebot(app)
 
     @app.route("/")
     def home():

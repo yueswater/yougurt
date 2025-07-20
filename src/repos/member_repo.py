@@ -82,7 +82,10 @@ class GoogleSheetMemberRepository(MemberRepository):
         return members
 
     def get_by_member_id(self, member_id: Union[str, UUID]) -> Optional[Member]:
-        return next((m for m in self.get_all() if m.member_id == member_id), None)
+        return next(
+            (m for m in self.get_all() if str(m.member_id) == str(member_id)),
+            None,
+        )
 
     def get_by_line_id(self, line_id: str) -> Optional[Member]:
         return next((m for m in self.get_all() if m.line_id == line_id), None)
@@ -110,7 +113,11 @@ class GoogleSheetMemberRepository(MemberRepository):
         all_rows = self.worksheet.get_all_records()
 
         target_row_idx = next(
-            (i for i, row in enumerate(all_rows) if row["Line ID"] == member.line_id),
+            (
+                i
+                for i, row in enumerate(all_rows)
+                if str(row["Member ID"]) == str(member.member_id)
+            ),
             None,
         )
 
