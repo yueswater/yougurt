@@ -33,10 +33,9 @@
     </td>
     <td class="px-6 py-4 whitespace-nowrap text-sm">
         {% if m.payment_status.name == 'PAID' %}
-        <!-- 暫時改成這樣測試 -->
-        <button onclick="console.log('line_id:', '{{ m.line_id }}'); alert('{{ m.line_id }}')"
+        <button hx-post="/admin/members/{{ m.line_id }}/freeze" hx-target="#member-table" hx-swap="innerHTML"
             class="text-red-500 hover:text-red-700">
-            測試 line_id
+            凍結帳戶
         </button>
         {% else %}
         <span class="text-gray-400 text-xs">尚未付款</span>
