@@ -137,19 +137,20 @@ def update_member(line_id):
     return render_template("admin/members.html", members=members)
 
 
-@admin_bp.route("/members/<line_id>/freeze", methods=["POST"])
-def freeze_member(line_id):
-    print(f"🧊 Received line_id from URL: {line_id}")
+@admin_bp.route("/members/<member_id>/freeze", methods=["POST"])
+def freeze_member(member_id):
+    print(f"🧊 Received member_id from URL: {member_id}")
 
     repo = GoogleSheetMemberRepository()
-    member = repo.get_by_line_id(line_id)
+    member = repo.get_by_member_id(member_id)  # 注意這裡方法要對應
 
     if member:
-        print(f"Freezing member: {member.member_name} ({line_id})")
+        print(f"🧊 Freezing member: {member.member_name} ({member_id})")
         member.payment_status = PaymentStatus.UNPAID
         repo.update(member)
+        print("✅ Member frozen successfully!")
     else:
-        print(f"No member found with line_id: {line_id}")
+        print(f"❌ No member found with member_id: {member_id}")
 
     members = repo.get_all()
     return render_template("admin/_member_table.html", members=members)
