@@ -109,8 +109,8 @@ class GoogleSheetMemberRepository(MemberRepository):
             else False
         )
 
-    def is_paid(self, member_id: str) -> bool:
-        member = self.get_by_member_id(member_id)
+    def is_paid(self, line_id: str) -> bool:
+        member = self.get_by_line_id(line_id)
         payment_status = member.payment_status.name.lower().strip()
         return payment_status == "paid"
 
