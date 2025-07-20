@@ -1,14 +1,6 @@
 {% for m in members %}
 <tr class="hover:bg-gray-50 transition duration-150">
-    <!-- <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{{ m.member_name }}</td> -->
-     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
-        {{ m.member_name }}
-        <br><small style="color: red;">
-            line_id: "{{ m.line_id }}"
-            (type: {{ m.line_id.__class__.__name__ if m.line_id else 'None' }})
-            (repr: {{ m.line_id|repr }})
-        </small>
-    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{{ m.member_name }}</td>
     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{{ m.phone }}</td>
     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ m.create_at|format_date_only }}</td>
     <td class="px-6 py-4 whitespace-nowrap text-sm">
@@ -38,10 +30,9 @@
     </td>
     <td class="px-6 py-4 whitespace-nowrap text-sm">
         {% if m.payment_status.name == 'PAID' %}
-        <!-- 暫時改成這樣測試 -->
-        <button onclick="console.log('line_id:', '{{ m.line_id }}'); alert('{{ m.line_id }}')"
-                class="text-red-500 hover:text-red-700">
-            測試 line_id
+        <button hx-post="/admin/members/{{ m.line_id }}/freeze" hx-target="#member-table" hx-swap="innerHTML"
+            class="text-red-500 hover:text-red-700">
+            凍結帳戶
         </button>
         {% else %}
         <span class="text-gray-400 text-xs">未付款</span>
