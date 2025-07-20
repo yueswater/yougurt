@@ -22,7 +22,6 @@ if os.getenv("GOOGLE_CREDS_BASE64") and not os.path.exists(SERVICE_ACCOUNT_PATH)
 _gc = None
 _spreadsheet = None
 
-
 def get_worksheet(sheet_name: str, force_reload: bool = False):
     global _gc, _spreadsheet
 
