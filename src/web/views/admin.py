@@ -42,22 +42,21 @@ def show_members():
     return render_template("admin/members.html", members=members)
 
 
-@admin_bp.route("/members/<line_id>/confirm", methods=["POST"])
-def confirm_payment(line_id):
-    # Check permissions
+@admin_bp.route("/members/<member_id>/confirm", methods=["POST"])
+def confirm_payment(member_id):
     if not session.get("user") or session["user"].get("username") != "admin":
         return "權限不足", 403
 
-    print(f"Confirming payment for line_id: {line_id}")
+    print(f"✅ Confirming payment for member_id: {member_id}")
 
     repo = GoogleSheetMemberRepository()
-    member = repo.get_by_line_id(line_id)
+    member = repo.get_by_member_id(member_id)
     if member:
         member.payment_status = PaymentStatus.PAID
         repo.update(member)
-        print("Payment confirmed successfully!")
+        print("✅ Payment confirmed successfully!")
     else:
-        print(f"No member found with line_id: {line_id}")
+        print(f"❌ No member found with member_id: {member_id}")
 
     members = repo.get_all()
     return render_template("admin/_member_table.html", members=members)
