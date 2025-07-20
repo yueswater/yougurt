@@ -1,3 +1,5 @@
+import logging
+
 from linebot import LineBotApi
 from linebot.models import Message, TextSendMessage
 
@@ -10,6 +12,8 @@ from src.bot.handlers import (
     purchase_handler,
     user_handler,
 )
+
+logging.basicConfig(level=logging.DEBUG)
 
 INTERRUPTING_WORDS = list(constants.KEYWORDS.values())
 
@@ -63,11 +67,11 @@ def dispatch(
         return order_handler.handle_order_step(line_id, text, line_bot_api)
 
     elif text == constants.KEYWORDS.get("Order", ""):
-        print(f"[DEBUG] 會員存在：{order_handler.member_service.exists(line_id)}")
-        print(
-            f"[DEBUG] 合法會員：{order_handler.member_service.check_valid_member(line_id)}"
+        logging.debug(f"會員存在：{order_handler.member_service.exists(line_id)}")
+        logging.debug(
+            f"合法會員：{order_handler.member_service.check_valid_member(line_id)}"
         )
-        print(f"[DEBUG] 是否封鎖：{order_handler.member_service.check_member_paid(line_id)}")
+        logging.debug(f"是否封鎖：{order_handler.member_service.check_member_paid(line_id)}")
         if not order_handler.member_service.exists(line_id):
             return TextSendMessage(
                 text=constants.MEMBERSHIP_KEYWORDS.get("NOT_MEMBER", "")
