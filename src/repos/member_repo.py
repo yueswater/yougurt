@@ -101,13 +101,18 @@ class GoogleSheetMemberRepository(MemberRepository):
     def exists(self, line_id: str) -> bool:
         return any(m.line_id == line_id for m in self.get_all())
 
-    def is_valid_member(self, line_id: str) -> bool:
-        member = self.get_by_line_id(line_id)
+    def is_valid_member(self, member_id: str) -> bool:
+        member = self.get_by_member_id(member_id)
         return (
             self.parse_bool(member.valid_member)
             if member and hasattr(member, "valid_member")
             else False
         )
+
+    def is_paid(self, member_id: str) -> bool:
+        member = self.get_by_member_id(member_id)
+        payment_status = member.payment_status.name.lower().strip()
+        return payment_status == "paid"
 
     def update(self, member: Member) -> None:
         all_rows = self.worksheet.get_all_records()

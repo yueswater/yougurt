@@ -71,6 +71,10 @@ def dispatch(
             return TextSendMessage(
                 text=constants.MEMBERSHIP_KEYWORDS.get("NOT_PAY", "")
             )
+        elif not order_handler.member_service.check_member_paid(line_id):
+            return TextSendMessage(
+                text=constants.MEMBERSHIP_KEYWORDS.get("BLOCKED", "")
+            )
         else:
             return order_handler.initiate_order(line_id)
 
