@@ -18,6 +18,7 @@ KEYWORDS = {
 MEMBERSHIP_KEYWORDS = {
     "NOT_MEMBER": "您尚未綁定會員，請先綁定帳號才能使用該功能",
     "NOT_PAY": "您尚未完成付款，請先付款後等待審核完成（約1-2個工作天）。",
+    "BLOCKED": "暫時無法下單，請聯絡客服",
 }
 
 URL = {

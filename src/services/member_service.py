@@ -48,6 +48,9 @@ class MemberService:
     def check_valid_member(self, line_id: str) -> bool:
         return self.repo.is_valid_member(line_id)
 
+    def check_member_paid(self, member_id: str) -> bool:
+        return self.repo.is_paid(member_id)
+
     def update_fields_by_line_id(self, line_id: str, updates: dict) -> Member:
         # Find out old membership profiles
         member = self.repo.get_by_line_id(line_id)
