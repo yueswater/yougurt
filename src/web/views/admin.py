@@ -176,6 +176,7 @@ def show_orders():
     if search:
         orders = [o for o in orders if search in str(o.member_name)]
 
+    orders.sort(key=lambda o: o.order_date, reverse=True)
     return render_template("admin/orders.html", orders=orders)
 
 
