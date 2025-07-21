@@ -39,6 +39,7 @@ def dashboard():
 def show_members():
     repo = GoogleSheetMemberRepository()
     members = repo.get_all()
+    members.sort(key=lambda m: m.create_at, reverse=True)
     return render_template("admin/members.html", members=members)
 
 
@@ -70,6 +71,7 @@ def members_partial():
         members = [m for m in repo.get_all() if search in str(m.member_name)]
     else:
         members = repo.get_all()
+    members.sort(key=lambda m: m.create_at, reverse=True)
     return render_template("admin/_member_table.html", members=members)
 
 
